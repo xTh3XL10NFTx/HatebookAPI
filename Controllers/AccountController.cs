@@ -1,5 +1,9 @@
 ﻿using Azure.Core;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Runtime.CompilerServices;
+using System.Security.Claims;
 using System.Security.Cryptography;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -15,8 +19,10 @@ namespace Hatebook.Controllers
         public static Hatebook userrrr = new Hatebook();
 
         private readonly ApplicationDbContext _context;
-        public AccountController(ApplicationDbContext context)
+        private readonly IConfiguration _configuration;
+        public AccountController(IConfiguration configuration, ApplicationDbContext context)
         {
+            _configuration = configuration;
             _context = context;
         }
 
@@ -38,12 +44,18 @@ namespace Hatebook.Controllers
 
         // POST api/<AccountController>
         [HttpPost("register")]
-        public async Task<ActionResult<List<HatebookDTO>>> RegisterUser(Hatebook request)
+        public async Task<ActionResult<List<Hatebook>>> RegisterUser(Hatebook request, string Pass)
         {
-            CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
+
+            request.Password= Pass;
+
+            CreatePasswordHash(Pass, out byte[] passwordHash, out byte[] passwordSalt);
 
             userr.PasswordHash = passwordHash; 
             userr.PasswordSalt = passwordSalt;
+
+            request.PasswordHash = passwordHash;
+            request.PasswordSalt = passwordSalt;
 
             _context.Hatebook.Add(request);
             await _context.SaveChangesAsync();
@@ -53,24 +65,43 @@ namespace Hatebook.Controllers
         [HttpPost("login")]
         public async Task<ActionResult<string>> Login(HatebookDTOtwo request)
         {
-     //       var useer = await _context.Hatebook.FindAsync();
-
-            foreach(var useers in _context.Hatebook)
+            foreach (var useers in _context.Hatebook)
             {
-                if (useers.Email == request.Email)
+                if (VerifyPasswordHash(request.Password, useers.PasswordHash, useers.PasswordSalt) && useers.Email == request.Email)
                 {
-                    return Ok("My Crazy Token");
+                    string token = CreateToken(useers);
+                    return Ok(token);
                 }
             }
             return BadRequest("User not found!");
-            //if (!VerifyPasswordHash(request.Password, userr.PasswordHash, userr.PasswordSalt))
-            //{
-            //    return BadRequest("Wrong Password!");
-            //}
+
             //    return Ok("My Crazy Token");
 
             //    _context.Hatebook.Add(user);
             //    await _context.SaveChangesAsync();
+
+        }
+
+
+        private string CreateToken(Hatebook userrrr)
+        {
+            List<Claim> claims = new List<Claim>()
+            {
+                new Claim(ClaimTypes.Name, userrrr.Email)
+            };
+
+            var key = new SymmetricSecurityKey(System.Text.Encoding.UTF8.GetBytes(_configuration.GetSection("AppSettings:Token").Value));
+
+            var cred = new SigningCredentials(key, SecurityAlgorithms.HmacSha512Signature);
+
+            var token = new JwtSecurityToken(
+                claims: claims,
+                expires: DateTime.Now.AddDays(1),
+                signingCredentials: cred);
+
+            var jwt = new JwtSecurityTokenHandler().WriteToken(token);
+
+            return jwt;
 
         }
 

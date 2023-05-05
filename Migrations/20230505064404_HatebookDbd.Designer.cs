@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Hatebook.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20230504104242_AccountMigration")]
-    partial class AccountMigration
+    [Migration("20230505064404_HatebookDbd")]
+    partial class HatebookDbd
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -58,6 +58,14 @@ namespace Hatebook.Migrations
                     b.Property<string>("Password")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<byte[]>("PasswordHash")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<byte[]>("PasswordSalt")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
 
                     b.Property<string>("ProfilePic")
                         .HasColumnType("nvarchar(max)");

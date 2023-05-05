@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel;
+using System.Runtime.InteropServices;
 
 namespace Hatebook
 {
@@ -14,7 +15,7 @@ namespace Hatebook
         public string Email { get; set; }
         [Required]
         [MinLength(6, ErrorMessage = "The password must be of minimum 6 characters!")]
-        public string Password { get; set; }
+        protected internal string Password { get; set; }
 
         //register part
         [Required]
@@ -27,7 +28,7 @@ namespace Hatebook
         public Gender GenderType { get; set; }
 
         [DisplayName("Password repeat")]
-            public string PassRepeat { get; set; }
+        protected internal string PassRepeat { get; set; }
 
         public enum Gender
         {
@@ -37,5 +38,9 @@ namespace Hatebook
             Woman
         }
         public string? ProfilePic { get; set; }
+
+        public byte[] PasswordHash { get; set; } = new byte[] { 0x00 };
+
+        public byte[] PasswordSalt { get; set; } = new byte[] { 0x00 };
     }
 }
