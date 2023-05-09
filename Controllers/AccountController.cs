@@ -1,12 +1,7 @@
-﻿using Azure.Core;
+﻿using AutoMapper;
 using Hatebook.Common;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using NuGet.Common;
-using System.IdentityModel.Tokens.Jwt;
-using System.Runtime.CompilerServices;
-using System.Security.Claims;
-using System.Security.Cryptography;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -16,19 +11,29 @@ namespace Hatebook.Controllers
     [ApiController]
     public class AccountController : ControllerBase
     {
+        private readonly UserManager<DbIdentityExtention> _userManager;
+        private readonly ILogger<AccountController> _logger;
+        private readonly IMapper _mapper;
+
+
 
 
         public static ApplicationDbContext _context;
         public static IConfiguration _configuration;
-        public AccountController(IConfiguration configuration, ApplicationDbContext context)
+
+        public AccountController(IConfiguration configuration,
+            ApplicationDbContext context,
+            UserManager<DbIdentityExtention> userManager,
+            ILogger<AccountController> logger,
+            IMapper mapper)
         {
+            _userManager = userManager;
+            _logger = logger;
+            _mapper = mapper;
             _configuration = configuration;
             _context = context;
 
         }
-
-        Login commonMethodsLogin = new Login(_configuration, _context);
-        Register commonMethodsRegister = new Register(_configuration, _context);
 
         [HttpGet]
         public async Task<ActionResult<List<Hatebook>>> Get()
@@ -50,22 +55,98 @@ namespace Hatebook.Controllers
         [HttpPost("register")]
         public async Task<ActionResult<List<Hatebook>>> RegisterUser(Hatebook request)
         {
-            return Ok(commonMethodsRegister.RegisterUser(request));
-        }
-        // POST api/<AccountController>
-        [HttpPost("login")]
-        public async Task<ActionResult<string>> Loginnn(HatebookDTOtwo request)
-        {
-            return Ok(commonMethodsLogin.Loginn(request));
+            Register commonMethodsRegister = new Register(_configuration, _context);
+            commonMethodsRegister.RegisterUser(request);
+            _context.Hatebook.Add(request);
+            await _context.SaveChangesAsync();
+            return Ok("Successfully registered!");
         }
 
+
+
         // POST api/<AccountController>
-        [HttpPost]
-        public async Task<ActionResult<List<Hatebook>>> AddUser(Hatebook user)
+        [HttpPost("registerNew")]
+        public async Task<ActionResult> RegisterUserNEW([FromBody] Hatebook request)
         {
-            _context.Hatebook.Add(user);
-            await _context.SaveChangesAsync();
-            return Ok(await _context.Hatebook.ToListAsync());
+            _logger.LogInformation($"Registration Attempt for {request.Email} ");
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            try
+            {
+                var user = _mapper.Map<DbIdentityExtention>(request);
+                var result = await _userManager.CreateAsync(user);
+
+                if (!result.Succeeded)
+                {
+                    return BadRequest("$User Registration Attempt Failed");
+                }
+                return Accepted();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Something Went Wrong in the {nameof(Register)}");
+                return Problem($"Something Went Wrong in the {nameof(Register)}", statusCode: 500);
+            }
+        }
+        // POST api/<AccountController>
+        [HttpPost("loginNew")]
+        public async Task<ActionResult> LoginUserNEW([FromBody] HatebookLogin request)
+        {
+            _logger.LogInformation($"Login Attempt for {request.Email} ");
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            try
+            {
+                var result = await _signInManager.PasswordSignInAsync(request.Email, request.Password, false, false);
+
+                if (!result.Succeeded)
+                {
+                    return Unauthorized(request);
+                }
+                return Accepted();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Something Went Wrong in the {nameof(Login)}");
+                return Problem($"Something Went Wrong in the {nameof(Login)}", statusCode: 500);
+            }
+        }
+
+
+
+
+        //// POST api/<AccountController>
+        //[HttpPost("registerNew")]
+        //public async Task<ActionResult> RegisterUserNEW(Hatebook model)
+        //{
+        //    if (ModelState.IsValid)
+        //    {
+        //        var user = new IdentityUser { UserName = model.Email, Email = model.Email };
+        //        var result = await UserManager.CreateAsync(user, model.Password);
+
+        //        UserManagerExtensions.CreateIdentity(user, model.Password);
+
+        //        if (result.Succeeded)
+        //        {
+        //            await SignInManager.SignInAsync(user, isPersistent: false);
+        //            return RedirectToAction("index", "home");
+        //        }
+
+        //        foreach(var error in result.Errors)
+        //        {
+        //            ModelState.AddModelError("",error.Description);
+        //        }
+        //    }
+
+        //}
+
+
+
+
+        // POST api/<AccountController>
+        [HttpPost("login")]
+        public async Task<ActionResult<string>> LoginUser(HatebookDTOtwo request)
+        {
+            Login commonMethodsLogin = new Login(_configuration, _context);
+            return Ok(commonMethodsLogin.LoginReturn(request));
         }
 
         // PUT api/<AccountController>/5
@@ -99,5 +180,19 @@ namespace Hatebook.Controllers
             await _context.SaveChangesAsync();
             return Ok(await _context.Hatebook.ToListAsync());
         }
+
+
+
+
+
+
+        //// POST api/<AccountController>
+        //[HttpPost]
+        //public async Task<ActionResult<List<Hatebook>>> AddUser(Hatebook user)
+        //{
+        //    _context.Hatebook.Add(user);
+        //    await _context.SaveChangesAsync();
+        //    return Ok(await _context.Hatebook.ToListAsync());
+        //}
     }
 }

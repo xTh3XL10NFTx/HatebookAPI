@@ -1,10 +1,4 @@
-﻿using Hatebook.Controllers;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using Newtonsoft.Json.Linq;
-using NuGet.Common;
+﻿using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Security.Cryptography;
@@ -13,16 +7,18 @@ namespace Hatebook.Common
 {
     public class Login
     {
-        public readonly ApplicationDbContext _context;
-        public readonly IConfiguration _configuration;
+        public ApplicationDbContext _context;
+        public IConfiguration _configuration;
+
         public Login(IConfiguration configuration, ApplicationDbContext context)
         {
             _configuration = configuration;
             _context = context;
         }
 
-        public async Task<ActionResult<string>> Loginn(HatebookDTOtwo request)
+        public string LoginReturn(HatebookDTOtwo request)
         {
+
             string notoken = "User not found!";
             foreach (var useers in _context.Hatebook)
             {
@@ -32,7 +28,7 @@ namespace Hatebook.Common
                     return token;
                 }
             }
-            return notoken;//    _context.Hatebook.Add(user);//    await _context.SaveChangesAsync();
+            return notoken;
         }
 
         public string CreateTokenn(Hatebook hatebook)
