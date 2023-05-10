@@ -16,20 +16,20 @@ namespace Hatebook.Common
             _context = context;
         }
 
-        public string LoginReturn(HatebookDTOtwo request)
-        {
+        //public string LoginReturn(HatebookDTOtwo request)
+        //{
 
-            string notoken = "User not found!";
-            foreach (var useers in _context.Hatebook)
-            {
-                if (VerifyPasswordHash(request.Password, useers.PasswordHash, useers.PasswordSalt) && useers.Email == request.Email)
-                {
-                    string token = CreateTokenn(useers);
-                    return token;
-                }
-            }
-            return notoken;
-        }
+        //    string notoken = "User not found!";
+        //    foreach (var useers in _context.Hatebook)
+        //    {
+        //        if (VerifyPasswordHash(request.Password, useers.PasswordHash, useers.PasswordSalt) && useers.Email == request.Email)
+        //        {
+        //            string token = CreateTokenn(useers);
+        //            return token;
+        //        }
+        //    }
+        //    return notoken;
+        //}
 
         public string CreateTokenn(Hatebook hatebook)
         {

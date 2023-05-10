@@ -1,16 +1,17 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel;
 using Newtonsoft.Json;
-using Hatebook;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Hatebook
 {
     public class HatebookLogin
     {
         //login part
+        [Key]
         [Required]
         [DisplayName("E-mail")]
-        [MinLength(6, ErrorMessage = "Must enter valid e-mail address!")]
+        [DataType(DataType.EmailAddress)]
         public string Email { get; set; }
         [Required]
         [MinLength(6, ErrorMessage = "The password must be of minimum 6 characters!")]
@@ -20,20 +21,20 @@ namespace Hatebook
 
     public class Hatebook : HatebookLogin
     {
-        //register part
-        [Key]
-        public int Id { get; set; }
         [Required]
         [DisplayName("First name")]
         public string Fname { get; set; }
         [DisplayName("Last name")]
         public string Lname { get; set; }
         [DisplayName("Birthday")]
+
+        [DataType(DataType.Date)]
         public DateTime Bday { get; set; }
         public Gender GenderType { get; set; }
 
-        [DisplayName("Password repeat")]
-        public string PassRepeat { get; set; }
+        //[DisplayName("Password repeat")]
+
+        //public string PassRepeat { get; set; }
 
         public enum Gender
         {
@@ -42,10 +43,7 @@ namespace Hatebook
             [Display(Name = "Woman")]
             Woman
         }
+        [DataType(DataType.ImageUrl)]
         public string? ProfilePic { get; set; }
-        [JsonIgnore]
-        public byte[] PasswordHash { get; set; } = new byte[] { 0x00 };
-        [JsonIgnore]
-        public byte[] PasswordSalt { get; set; } = new byte[] { 0x00 };
     }
 }

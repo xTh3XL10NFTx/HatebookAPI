@@ -17,8 +17,8 @@ namespace Hatebook.Common
         {
             CreatePasswordHash(request.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
-            request.PasswordHash = passwordHash;
-            request.PasswordSalt = passwordSalt;
+            //request.PasswordHash = passwordHash;
+            //request.PasswordSalt = passwordSalt;
             return request;
         }
         private void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
