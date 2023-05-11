@@ -8,7 +8,7 @@ namespace Hatebook.Services
     public class AuthManager : IAuthManager
     {
         private readonly UserManager<DbIdentityExtention> _userManager;
-        public static IConfiguration _configuration;
+        private readonly IConfiguration _configuration;
         private DbIdentityExtention _user;
 
         public AuthManager(UserManager<DbIdentityExtention> userManager, IConfiguration configuration)
@@ -29,9 +29,9 @@ namespace Hatebook.Services
         private JwtSecurityToken GenerateTokenOptions(SigningCredentials signingCredentials, List<Claim> claims)
         {
             var jwtSettings = _configuration.GetSection("Jwt");
-            var expiration = DateTime.Now.AddMinutes(Convert.ToDouble(jwtSettings.GetSection("lifetime").Value));
+            var expiration = DateTime.Now.AddDays(Convert.ToDouble(jwtSettings.GetSection("lifetime").Value));
             var token = new JwtSecurityToken(
-                issuer: jwtSettings.GetSection("validIssuer").Value,
+                issuer: jwtSettings.GetSection("Issuer").Value,
                 claims: claims,
                 expires: expiration,
                 signingCredentials: signingCredentials
@@ -61,8 +61,10 @@ namespace Hatebook.Services
 
         public async Task<bool> ValidateUser(HatebookLogin request)
         {
-            _user = await _userManager.FindByEmailAsync(request.Email);
-            return (_user != null && await _userManager.CheckPasswordAsync(_user, request.Password));
+            _user = await _userManager.FindByNameAsync(request.Email);
+
+            var validPassword = await _userManager.CheckPasswordAsync(_user, request.Password);
+            return (_user != null && validPassword);
         }
     }
 }

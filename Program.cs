@@ -50,9 +50,9 @@ void AddSwaggerDoc(IServiceCollection services)
                         Type = ReferenceType.SecurityScheme,
                         Id = "Bearer"
                     },
-                    Scheme ="0auth2",
-                    Name="Bearer",
-                    In=ParameterLocation.Header,
+                    Scheme = "0auth2",
+                    Name = "Bearer",
+                    In = ParameterLocation.Header,
 
                 },
                 new List<string>()
