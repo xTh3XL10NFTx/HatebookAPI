@@ -8,7 +8,5 @@ namespace Hatebook.Data
         {
 
         }
-
-        public DbSet<Hatebook> Hatebook { get; set; }
     }
 }

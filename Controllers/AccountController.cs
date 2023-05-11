@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Hatebook.Services;
+using Microsoft.AspNetCore.Authorization;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -33,34 +34,27 @@ namespace Hatebook.Controllers
 
         }
 
+        [Authorize]
         [HttpGet]
-        public async Task<ActionResult<List<Hatebook>>> Get()
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<IActionResult> Get()
         {
-            return Ok(await _context.Hatebook.ToListAsync());
+            var requestParams = await _context.Users.ToListAsync();
+            var results = _mapper.Map<IList<Hatebook>>(requestParams);
+            return Ok(results);
         }
 
         // GET api/<AccountController>/5
         [HttpGet("{id}")]
         public async Task<ActionResult<Hatebook>> Get(int id)
         {
-            var user = await _context.Hatebook.FindAsync(id);
+            var user = await _context.Users.FindAsync(id);
             if (user == null)
                 return BadRequest("User not found.");
             return Ok(user);
         }
-
-        //// POST api/<AccountController>
-        //[HttpPost("register")]
-        //public async Task<ActionResult<List<Hatebook>>> RegisterUser(Hatebook request)
-        //{
-        //    Register commonMethodsRegister = new Register(_configuration, _context);
-        //    commonMethodsRegister.RegisterUser(request);
-        //    _context.Hatebook.Add(request);
-        //    await _context.SaveChangesAsync();
-        //    return Ok("Successfully registered!");
-        //}
-
-
 
         // POST api/<AccountController>
         [HttpPost("registerNew")]
@@ -100,6 +94,7 @@ namespace Hatebook.Controllers
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+
         public async Task<IActionResult> LoginUserNEW([FromBody] HatebookLogin request)
         {
             _logger.LogInformation($"Login Attempt for {request.Email} ");
@@ -112,89 +107,18 @@ namespace Hatebook.Controllers
             return Accepted(new { Token = await _authManager.CreateToken() });
         }
 
-
-
-
-        //// POST api/<AccountController>
-        //[HttpPost("registerNew")]
-        //public async Task<ActionResult> RegisterUserNEW(Hatebook model)
-        //{
-        //    if (ModelState.IsValid)
-        //    {
-        //        var user = new IdentityUser { UserName = model.Email, Email = model.Email };
-        //        var result = await UserManager.CreateAsync(user, model.Password);
-
-        //        UserManagerExtensions.CreateIdentity(user, model.Password);
-
-        //        if (result.Succeeded)
-        //        {
-        //            await SignInManager.SignInAsync(user, isPersistent: false);
-        //            return RedirectToAction("index", "home");
-        //        }
-
-        //        foreach(var error in result.Errors)
-        //        {
-        //            ModelState.AddModelError("",error.Description);
-        //        }
-        //    }
-
-        //}
-
-
-
-
-        //// POST api/<AccountController>
-        //[HttpPost("login")]
-        //public async Task<ActionResult<string>> LoginUser(HatebookDTOtwo request)
-        //{
-        //    Login commonMethodsLogin = new Login(_configuration, _context);
-        //    return Ok(commonMethodsLogin.LoginReturn(request));
-        //}
-
-        //// PUT api/<AccountController>/5
-        //[HttpPut]
-        //public async Task<ActionResult<List<Hatebook>>> UpdateUser(Hatebook request)
-        //{
-        //    var dbUser = await _context.Hatebook.FindAsync(request.Id);
-        //    if (dbUser == null)
-        //        return BadRequest("User not found!");
-
-        //    dbUser.Fname = request.Fname;
-        //    dbUser.Lname = request.Lname;
-        //    dbUser.Email = request.Email;
-        //    dbUser.GenderType = request.GenderType;
-        //    dbUser.ProfilePic = request.ProfilePic;
-
-        //    await _context.SaveChangesAsync();
-        //    return Ok(await _context.Hatebook.ToListAsync());
-        //}
-
         // DELETE api/<AccountController>/5
         [HttpDelete("{id}")]
-        public async Task<ActionResult<List<Hatebook>>> Delete(int id)
+        public async Task<ActionResult> Delete(string email)
         {
-            var dbUser = await _context.Hatebook.FindAsync(id);
+            var dbUser = await _context.Users.FindAsync(email);
             if (dbUser == null)
-                return BadRequest("Hero not found.");
+                return BadRequest("User not found.");
 
-            _context.Hatebook.Remove(dbUser);
+            _context.Users.Remove(dbUser);
 
             await _context.SaveChangesAsync();
-            return Ok(await _context.Hatebook.ToListAsync());
+            return Ok(await _context.Users.ToListAsync());
         }
-
-
-
-
-
-
-        //// POST api/<AccountController>
-        //[HttpPost]
-        //public async Task<ActionResult<List<Hatebook>>> AddUser(Hatebook user)
-        //{
-        //    _context.Hatebook.Add(user);
-        //    await _context.SaveChangesAsync();
-        //    return Ok(await _context.Hatebook.ToListAsync());
-        //}
     }
 }
