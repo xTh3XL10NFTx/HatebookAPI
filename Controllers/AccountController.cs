@@ -104,19 +104,12 @@ namespace Hatebook.Controllers
         {
             _logger.LogInformation($"Login Attempt for {request.Email} ");
             if (!ModelState.IsValid) return BadRequest(ModelState);
-            try
+
+            if (!await _authManager.ValidateUser(request))
             {
-                if (!await _authManager.ValidateUser(request))
-                {
-                    return Unauthorized();
-                }
-                return Accepted(new { Token = await _authManager.CreateToken() });
+                return Unauthorized();
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, $"Something Went Wrong in the {nameof(LoginUserNEW)}");
-                return Problem($"Something Went Wrong in the {nameof(LoginUserNEW)}", statusCode: 500);
-            }
+            return Accepted(new { Token = await _authManager.CreateToken() });
         }
 
 
