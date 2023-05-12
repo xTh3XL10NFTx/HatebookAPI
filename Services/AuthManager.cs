@@ -34,7 +34,8 @@ namespace Hatebook.Services
                 issuer: jwtSettings.GetSection("Issuer").Value,
                 claims: claims,
                 expires: expiration,
-                signingCredentials: signingCredentials
+                signingCredentials: signingCredentials,
+                audience: jwtSettings.GetSection("Audience").Value
                 );
 
             return token;

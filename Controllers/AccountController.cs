@@ -16,7 +16,7 @@ namespace Hatebook.Controllers
     public class AccountController : ControllerBase
     {
         private readonly UserManager<DbIdentityExtention> _userManager;
-        private readonly SignInManager<DbIdentityExtention> _signInManager;
+       // private readonly SignInManager<DbIdentityExtention> _signInManager;
         private readonly ILogger<AccountController> _logger;
         private readonly IMapper _mapper;
         private readonly IAuthManager _authManager;
@@ -27,13 +27,13 @@ namespace Hatebook.Controllers
         public AccountController(IConfiguration configuration,
             ApplicationDbContext context,
             UserManager<DbIdentityExtention> userManager,
-            SignInManager<DbIdentityExtention> signInManager,
+            //SignInManager<DbIdentityExtention> signInManager,
             ILogger<AccountController> logger,
             IMapper mapper,
             IAuthManager authManager)
         {
             _userManager = userManager;
-            _signInManager = signInManager;
+          //  _signInManager = signInManager;
             _logger = logger;
             _mapper = mapper;
             _configuration = configuration;
@@ -115,9 +115,10 @@ namespace Hatebook.Controllers
             }
 
 
+            var user = await _userManager.FindByNameAsync(request.Email);
 
 
-            var user = _signInManager.UserManager.FindByEmailAsync(request.Email).Result;
+           // var user = await _signInManager.UserManager.FindByEmailAsync(request.Email);
 
             var claims = new[]
             {
@@ -133,11 +134,13 @@ namespace Hatebook.Controllers
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-                issuer: "your_issuer",
-                audience: "your_audience",
+                        issuer: jwtSettings.GetSection("Issuer").Value,
+                                audience: jwtSettings.GetSection("Audience").Value,
+
                 claims: claims,
                 expires: DateTime.UtcNow.AddMinutes(30),
                 signingCredentials: creds);
+
 
             return Ok(new JwtSecurityTokenHandler().WriteToken(token));
 

@@ -16,13 +16,14 @@ var configuration = builder.Configuration;
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DbConnection")));
-
-builder.Services.AddAuthentication();
-builder.Services.ConfigureIdentity();
 builder.Services.ConfigureJWT(configuration);
 
 builder.Services.AddAutoMapper(typeof(MapperInitializer));
 builder.Services.AddScoped<IAuthManager, AuthManager>();
+
+
+builder.Services.AddAuthentication();
+builder.Services.ConfigureIdentity();
 
 builder.Services.AddEndpointsApiExplorer();
 
@@ -40,21 +41,19 @@ void AddSwaggerDoc(IServiceCollection services)
             Name = "Authorization",
             In = ParameterLocation.Header,
             Type = SecuritySchemeType.ApiKey,
-            Scheme = "Bearer"
+            Scheme = "Bearer",
+            BearerFormat = "JWT"
         });
 
         c.AddSecurityRequirement(new OpenApiSecurityRequirement() {
             {
                 new OpenApiSecurityScheme
                 {
-                    Reference = new OpenApiReference {
+                    Reference = new OpenApiReference 
+                    {
                         Type = ReferenceType.SecurityScheme,
                         Id = "Bearer"
-                    },
-                    Scheme = "0auth2",
-                    Name = "Bearer",
-                    In = ParameterLocation.Header,
-
+                    }
                 },
                 new List<string>()
             }
@@ -64,8 +63,8 @@ void AddSwaggerDoc(IServiceCollection services)
     });
 }
 
-builder.Services.AddIdentity<IdentityUser, IdentityRole>()
-    .AddEntityFrameworkStores<ApplicationDbContext>();
+//builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+//    .AddEntityFrameworkStores<ApplicationDbContext>();
 
 var app = builder.Build();
 
