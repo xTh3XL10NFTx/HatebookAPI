@@ -1,6 +1,11 @@
 ﻿using AutoMapper;
 using Hatebook.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
@@ -11,6 +16,7 @@ namespace Hatebook.Controllers
     public class AccountController : ControllerBase
     {
         private readonly UserManager<DbIdentityExtention> _userManager;
+        private readonly SignInManager<DbIdentityExtention> _signInManager;
         private readonly ILogger<AccountController> _logger;
         private readonly IMapper _mapper;
         private readonly IAuthManager _authManager;
@@ -21,11 +27,13 @@ namespace Hatebook.Controllers
         public AccountController(IConfiguration configuration,
             ApplicationDbContext context,
             UserManager<DbIdentityExtention> userManager,
+            SignInManager<DbIdentityExtention> signInManager,
             ILogger<AccountController> logger,
             IMapper mapper,
             IAuthManager authManager)
         {
             _userManager = userManager;
+            _signInManager = signInManager;
             _logger = logger;
             _mapper = mapper;
             _configuration = configuration;
@@ -34,8 +42,9 @@ namespace Hatebook.Controllers
 
         }
 
-        [Authorize]
+       
         [HttpGet("get")]
+        [Authorize]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
@@ -104,7 +113,48 @@ namespace Hatebook.Controllers
             {
                 return Unauthorized();
             }
-            return Accepted(new { Token = await _authManager.CreateToken() });
+
+
+
+
+            var user = _signInManager.UserManager.FindByEmailAsync(request.Email).Result;
+
+            var claims = new[]
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.Id),
+                new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+            };
+
+
+            var jwtSettings = _configuration.GetSection("Jwt");
+            var keyy = jwtSettings.GetSection("Key").Value;
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyy));
+            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                issuer: "your_issuer",
+                audience: "your_audience",
+                claims: claims,
+                expires: DateTime.UtcNow.AddMinutes(30),
+                signingCredentials: creds);
+
+            return Ok(new JwtSecurityTokenHandler().WriteToken(token));
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+          //  return Accepted(new { Token = await _authManager.CreateToken() });
         }
 
         // DELETE api/<AccountController>/5

@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using Hatebook.Controllers;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 using System.Text;
 
 namespace Hatebook
@@ -13,6 +13,7 @@ namespace Hatebook
 
             builder = new IdentityBuilder(builder.UserType, typeof(IdentityRole), service);
             builder.AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
+                builder.AddSignInManager<SignInManager<DbIdentityExtention>>();
         }
 
         public static void ConfigureJWT(this IServiceCollection service, IConfiguration Configuration)

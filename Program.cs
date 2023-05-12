@@ -7,6 +7,7 @@ using Hatebook.Configurations;
 using Hatebook.Services;
 using FluentAssertions.Common;
 using Microsoft.OpenApi.Models;
+using Hatebook.Controllers;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
