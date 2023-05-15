@@ -16,7 +16,7 @@ namespace Hatebook.Controllers
     public class AccountController : ControllerBase
     {
         private readonly UserManager<DbIdentityExtention> _userManager;
-       // private readonly SignInManager<DbIdentityExtention> _signInManager;
+        // private readonly SignInManager<DbIdentityExtention> _signInManager;
         private readonly ILogger<AccountController> _logger;
         private readonly IMapper _mapper;
         private readonly IAuthManager _authManager;
@@ -33,7 +33,7 @@ namespace Hatebook.Controllers
             IAuthManager authManager)
         {
             _userManager = userManager;
-          //  _signInManager = signInManager;
+            //  _signInManager = signInManager;
             _logger = logger;
             _mapper = mapper;
             _configuration = configuration;
@@ -42,7 +42,7 @@ namespace Hatebook.Controllers
 
         }
 
-       
+
         [HttpGet("get")]
         [Authorize]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -118,7 +118,7 @@ namespace Hatebook.Controllers
             var user = await _userManager.FindByNameAsync(request.Email);
 
 
-           // var user = await _signInManager.UserManager.FindByEmailAsync(request.Email);
+            // var user = await _signInManager.UserManager.FindByEmailAsync(request.Email);
 
             var claims = new[]
             {
@@ -128,18 +128,27 @@ namespace Hatebook.Controllers
             };
 
 
+            // Retrieve the secret from appsettings.json
+            var configuration = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json")
+                .Build();
+            var secret = configuration["Jwt:Key"];
+
+            // Create a SymmetricSecurityKey using the secret
+            SecurityKey key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
+
+            // Create a SigningCredentials object using the key
+            SigningCredentials credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            
+
             var jwtSettings = _configuration.GetSection("Jwt");
-            var keyy = jwtSettings.GetSection("Key").Value;
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyy));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var token = new JwtSecurityToken(
-                        issuer: jwtSettings.GetSection("Issuer").Value,
-                                audience: jwtSettings.GetSection("Audience").Value,
-
+                issuer: jwtSettings["Issuer"],
+                audience: jwtSettings["Audience"],
                 claims: claims,
                 expires: DateTime.UtcNow.AddMinutes(30),
-                signingCredentials: creds);
+                signingCredentials: credentials);
 
 
             return Ok(new JwtSecurityTokenHandler().WriteToken(token));
@@ -157,7 +166,7 @@ namespace Hatebook.Controllers
 
 
 
-          //  return Accepted(new { Token = await _authManager.CreateToken() });
+            //  return Accepted(new { Token = await _authManager.CreateToken() });
         }
 
         // DELETE api/<AccountController>/5

@@ -54,8 +54,7 @@ namespace Hatebook.Services
         private SigningCredentials GetSigningCredentials()
         {
             var jwtSettings = _configuration.GetSection("Jwt");
-            var key = jwtSettings.GetSection("Key").Value;
-            var secret = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key));
+            var secret = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]));
 
             return new SigningCredentials(secret, SecurityAlgorithms.HmacSha256);
         }
