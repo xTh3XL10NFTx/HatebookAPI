@@ -6,7 +6,7 @@ namespace Hatebook.Configurations
     {
         public MapperInitializer()
         {
-            CreateMap<DbIdentityExtention, Hatebook>().ReverseMap();
+            CreateMap<DbIdentityExtention, HatebookMainModel>().ReverseMap();
         }
     }
 }

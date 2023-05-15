@@ -1,4 +1,5 @@
-﻿using Microsoft.IdentityModel.Tokens;
+﻿using Hatebook.Models;
+using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -31,11 +32,11 @@ namespace Hatebook.Services
             var jwtSettings = _configuration.GetSection("Jwt");
             var expiration = DateTime.Now.AddDays(Convert.ToDouble(jwtSettings.GetSection("lifetime").Value));
             var token = new JwtSecurityToken(
-                issuer: jwtSettings.GetSection("Issuer").Value,
+                issuer: jwtSettings["Issuer"],
+                audience: jwtSettings["Audience"],
                 claims: claims,
                 expires: expiration,
-                signingCredentials: signingCredentials,
-                audience: jwtSettings.GetSection("Audience").Value
+                signingCredentials: signingCredentials
                 );
 
             return token;
@@ -45,6 +46,9 @@ namespace Hatebook.Services
         {
             var claims = new List<Claim>()
             {
+                new Claim(JwtRegisteredClaimNames.Sub, _user.Id),
+                new Claim(JwtRegisteredClaimNames.Email, _user.Email),
+                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
                 new Claim(ClaimTypes.Name, _user.UserName)
             };
 

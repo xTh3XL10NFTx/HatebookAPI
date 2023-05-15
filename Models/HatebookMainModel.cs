@@ -1,8 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel;
-using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
+using Hatebook.Common;
 
-namespace Hatebook
+namespace Hatebook.Models
 {
     public class HatebookLogin
     {
@@ -17,32 +18,32 @@ namespace Hatebook
         public string Password { get; set; }
     }
 
-
-    public class Hatebook : HatebookLogin
+    public class HatebookMainModel : HatebookLogin
     {
         [Required]
         [DisplayName("First name")]
-        public string Fname { get; set; }
+        public string FirstName { get; set; }
+
         [DisplayName("Last name")]
-        public string Lname { get; set; }
+        public string LastName { get; set; }
+
         [DisplayName("Birthday")]
-
         [DataType(DataType.Date)]
-        public DateTime Bday { get; set; }
+        public DateTime Birthday { get; set; }
+
+        [JsonConverter(typeof(GenderConverter))]
         public Gender GenderType { get; set; }
-
-        //[DisplayName("Password repeat")]
-
-        //public string PassRepeat { get; set; }
-
         public enum Gender
         {
-            [Display(Name = "Man")]
-            Man,
-            [Display(Name = "Woman")]
-            Woman
+            [Display(Name = "Male")]
+            Male,
+            [Display(Name = "Female")]
+            Female,
+            [Display(Name = "Unknown")]
+            Unknown
         }
+
         [DataType(DataType.ImageUrl)]
-        public string? ProfilePic { get; set; }
+        public string? ProfilePicture { get; set; }
     }
 }

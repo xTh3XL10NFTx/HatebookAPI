@@ -5,7 +5,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using System.Text.Json;
 
-namespace Hatebook
+namespace Hatebook.Services
 {
     public static class ServiceExtentions
     {
@@ -15,13 +15,13 @@ namespace Hatebook
 
             //builder = new IdentityBuilder(DbIdentityExtention, typeof(IdentityRole), service);
             builder.AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
-              //  builder.AddSignInManager<SignInManager<DbIdentityExtention>>();
+            //  builder.AddSignInManager<SignInManager<DbIdentityExtention>>();
         }
 
         public static void ConfigureJWT(this IServiceCollection service, IConfiguration Configuration)
         {
             // Retrieve the secret from appsettings.json
-        //    var secret = Configuration["Jwt:Key"];
+            //    var secret = Configuration["Jwt:Key"];
 
             var jwtSettings = Configuration.GetSection("Jwt");
 

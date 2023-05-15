@@ -2,12 +2,12 @@ global using Microsoft.EntityFrameworkCore;
 global using Hatebook.Data;
 global using Microsoft.AspNetCore.Mvc;
 global using Microsoft.AspNetCore.Identity;
-using Hatebook;
+global using Hatebook.Services;
+global using Hatebook.Common;
+global using Hatebook.Models;
 using Hatebook.Configurations;
-using Hatebook.Services;
 using Microsoft.OpenApi.Models;
 using Hatebook.Controllers;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -20,7 +20,8 @@ builder.Services.ConfigureJWT(configuration);
 
 builder.Services.AddAutoMapper(typeof(MapperInitializer));
 builder.Services.AddScoped<IAuthManager, AuthManager>();
-
+builder.Services.AddScoped<IControllerConstructor, ControllerConstructor>();
+builder.Services.AddScoped<AccountController>();
 builder.Services.ConfigureIdentity();
 
 builder.Services.AddEndpointsApiExplorer();

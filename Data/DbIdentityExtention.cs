@@ -8,20 +8,22 @@ namespace Hatebook.Data
     {
         [Required]
         [DisplayName("First name")]
-        public string Fname { get; set; }
+        public string FirstName { get; set; }
         [DisplayName("Last name")]
-        public string Lname { get; set; }
+        public string LastName { get; set; }
         [DisplayName("Birthday")]
-        public DateTime Bday { get; set; }
+        public DateTime Birthday { get; set; }
         public Gender GenderType { get; set; }
 
         public enum Gender
         {
-            [Display(Name = "Man")]
-            Man,
-            [Display(Name = "Woman")]
-            Woman
+            [Display(Name = "Male")]
+            Male,
+            [Display(Name = "Female")]
+            Female,
+            [Display(Name = "Unknown")]
+            Unknown
         }
-        public string? ProfilePic { get; set; }
+        public string? ProfilePicture { get; set; }
     }
 }
