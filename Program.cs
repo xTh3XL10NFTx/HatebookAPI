@@ -5,9 +5,9 @@ global using Microsoft.AspNetCore.Identity;
 using Hatebook;
 using Hatebook.Configurations;
 using Hatebook.Services;
-using FluentAssertions.Common;
 using Microsoft.OpenApi.Models;
 using Hatebook.Controllers;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -21,8 +21,6 @@ builder.Services.ConfigureJWT(configuration);
 builder.Services.AddAutoMapper(typeof(MapperInitializer));
 builder.Services.AddScoped<IAuthManager, AuthManager>();
 
-
-builder.Services.AddAuthentication();
 builder.Services.ConfigureIdentity();
 
 builder.Services.AddEndpointsApiExplorer();
@@ -75,6 +73,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+app.UseRouting();
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
