@@ -1,13 +1,10 @@
 ﻿using AutoMapper;
 using Hatebook.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace Hatebook.Controllers
 {
@@ -16,7 +13,6 @@ namespace Hatebook.Controllers
     public class AccountController : ControllerBase
     {
         private readonly UserManager<DbIdentityExtention> _userManager;
-        // private readonly SignInManager<DbIdentityExtention> _signInManager;
         private readonly ILogger<AccountController> _logger;
         private readonly IMapper _mapper;
         private readonly IAuthManager _authManager;
@@ -27,13 +23,11 @@ namespace Hatebook.Controllers
         public AccountController(IConfiguration configuration,
             ApplicationDbContext context,
             UserManager<DbIdentityExtention> userManager,
-            //SignInManager<DbIdentityExtention> signInManager,
             ILogger<AccountController> logger,
             IMapper mapper,
             IAuthManager authManager)
         {
             _userManager = userManager;
-            //  _signInManager = signInManager;
             _logger = logger;
             _mapper = mapper;
             _configuration = configuration;
@@ -114,11 +108,7 @@ namespace Hatebook.Controllers
                 return Unauthorized();
             }
 
-
             var user = await _userManager.FindByNameAsync(request.Email);
-
-
-            // var user = await _signInManager.UserManager.FindByEmailAsync(request.Email);
 
             var claims = new[]
             {
@@ -147,26 +137,11 @@ namespace Hatebook.Controllers
                 issuer: jwtSettings["Issuer"],
                 audience: jwtSettings["Audience"],
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(30),
+                expires: DateTime.UtcNow.AddHours(1),
                 signingCredentials: credentials);
 
 
             return Ok(new JwtSecurityTokenHandler().WriteToken(token));
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-            //  return Accepted(new { Token = await _authManager.CreateToken() });
         }
 
         // DELETE api/<AccountController>/5
