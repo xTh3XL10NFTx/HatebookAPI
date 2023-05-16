@@ -2,9 +2,10 @@
 
 namespace Hatebook.Common
 {
+    [ApiExplorerSettings(IgnoreApi = true)]
     public class AccountServices : AccountController
     {
-        private static readonly AccountServices accountServices;
+        private static readonly AccountServices? accountServices;
         private readonly IControllerConstructor _dependency;
         public AccountServices(IControllerConstructor dependency) : base(dependency, accountServices)
         {

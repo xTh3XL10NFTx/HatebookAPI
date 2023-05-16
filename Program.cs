@@ -24,6 +24,7 @@ builder.Services.AddScoped<AccountController, AccountServices>();
 builder.Services.AddScoped<IControllerConstructor, ControllerConstructor>();
 builder.Services.AddScoped<AccountController>();
 builder.Services.AddScoped<AccountServices>();
+builder.Services.AddScoped<GroupServices>();
 builder.Services.ConfigureIdentity();
 
 builder.Services.AddEndpointsApiExplorer();

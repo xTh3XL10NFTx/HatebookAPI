@@ -13,11 +13,7 @@ namespace Hatebook.Data
             base.OnModelCreating(modelBuilder);
         }
 
-        internal Task FindAsync(string email)
-        {
-            throw new NotImplementedException();
-        }
-
         public DbSet<DbIdentityExtention> dbIdentityExtentions { get; set; }
+        public DbSet<GroupsModel> groups { get; set; }
     }
 }
