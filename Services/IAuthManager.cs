@@ -1,6 +1,4 @@
-﻿using Hatebook.Models;
-
-namespace Hatebook.Services
+﻿namespace Hatebook.Services
 {
     public interface IAuthManager
     {

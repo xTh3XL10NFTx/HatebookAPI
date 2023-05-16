@@ -79,26 +79,8 @@ namespace Hatebook.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> LogIn([FromBody] HatebookLogin request)
         {
-            _dependency.Logger.LogInformation($"Login Attempt for {request.Email} ");
-            if (!ModelState.IsValid) return BadRequest(ModelState);
-            try
-            {
-                if (!await _dependency.AuthManager.ValidateUser(request))
-                {
-                    return Unauthorized();
-                }
-                return Accepted(new { Token = await _dependency.AuthManager.CreateToken() });
-            }
-            catch (Exception ex)
-            {
-
-                if (!await _dependency.AuthManager.ValidateUser(request))
-                {
-                    _dependency.Logger.LogError(ex, $"Something Went Wrong in the {nameof(LogIn)}");
-                    return Problem($"Something Went Wrong in the {nameof(LogIn)}", statusCode: 500);
-                }
-                return Unauthorized();
-            }
+            AccountServices login = new AccountServices(_dependency);
+            return await login.LogIntoUser(request);
         }
 
         // DELETE api/Account/delete/5
