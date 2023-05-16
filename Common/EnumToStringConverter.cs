@@ -8,7 +8,21 @@ namespace Hatebook.Common
     {
         public override Gender Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
         {
-            return Enum.Parse<Gender>(reader.GetString());
+            if (reader.TokenType == JsonTokenType.String)
+            {
+                string genderValue = reader.GetString();
+
+                if (!string.IsNullOrEmpty(genderValue))
+                {
+                    if (Enum.TryParse<Gender>(genderValue, out Gender gender))
+                    {
+                        return gender;
+                    }
+                }
+            }
+
+            // Gender is not specified or invalid, return unknown
+            return Gender.Unknown;
         }
 
         public override void Write(Utf8JsonWriter writer, Gender value, JsonSerializerOptions options)

@@ -8,12 +8,16 @@ namespace Hatebook.Data
         {
 
         }
-
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
-
         }
+
+        internal Task FindAsync(string email)
+        {
+            throw new NotImplementedException();
+        }
+
         public DbSet<DbIdentityExtention> dbIdentityExtentions { get; set; }
     }
 }
