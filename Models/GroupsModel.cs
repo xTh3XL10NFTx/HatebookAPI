@@ -1,10 +1,16 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace Hatebook.Models
 {
     public class GroupsModel
     {
+        public GroupsModel()
+        {
+            Id = Guid.NewGuid();
+        }
         [Key]
+        public Guid Id { get; set; }
         [Required]
         public string Name { get; set; }
         public string Description { get; set; }

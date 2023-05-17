@@ -22,7 +22,13 @@ namespace Hatebook.Services
             //    var secret = Configuration["Jwt:Key"];
 
             var jwtSettings = Configuration.GetSection("Jwt");
-
+            service.AddAuthorization(options =>
+            {
+                options.AddPolicy("DeletePermission", policy =>
+                {
+                    policy.RequireRole("Admin"); // Replace "Admin" with the appropriate role name
+                });
+            });
             service.AddAuthentication(o =>
             {
                 o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;

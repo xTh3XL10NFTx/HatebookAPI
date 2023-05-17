@@ -20,7 +20,7 @@ namespace Hatebook.Common
             {
                 if (!await _dependency.AuthManager.ValidateUser(request))
                 {
-                    return Unauthorized();
+                    return Unauthorized("Wrong email or password");
                 }
                 return Accepted(new { Token = await _dependency.AuthManager.CreateToken() });
             }
@@ -55,7 +55,7 @@ namespace Hatebook.Common
                     }
                     return BadRequest(ModelState);
                 }
-                return Accepted();
+                return Accepted("User registered successfully!");
             }
             catch (Exception ex)
             {
