@@ -61,7 +61,7 @@ void AddSwaggerDoc(IServiceCollection services)
             }
         });
 
-        c.SwaggerDoc("v1", new OpenApiInfo { Title = "HatebookAPI", Version = "v1" });
+        c.SwaggerDoc("v1", new OpenApiInfo { Title = "HatebookAPI", Version = "v9 000" });
     });
 }
 
