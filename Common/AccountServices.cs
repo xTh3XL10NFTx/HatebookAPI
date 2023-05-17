@@ -41,12 +41,11 @@ namespace Hatebook.Common
             _dependency.Logger.LogInformation($"Registration Attempt for {request.Email} ");
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            try
-            {
                 var user = _dependency.Mapper.Map<DbIdentityExtention>(request);
                 user.UserName = request.Email;
                 var result = await _dependency.UserManager.CreateAsync(user, request.Password);
 
+                await _dependency.UserManager.AddToRolesAsync(user, request.Roles);
                 if (!result.Succeeded)
                 {
                     foreach (var error in result.Errors)
@@ -55,13 +54,8 @@ namespace Hatebook.Common
                     }
                     return BadRequest(ModelState);
                 }
+
                 return Accepted("User registered successfully!");
-            }
-            catch (Exception ex)
-            {
-                _dependency.Logger.LogError(ex, $"Something Went Wrong in the {nameof(RegisterUser)}");
-                return Problem($"Something Went Wrong in the {nameof(RegisterUser)}", statusCode: 500);
-            }
         }
         [HttpPost("DeleteUser")]
         public async Task<ActionResult> DeleteUser(string email)

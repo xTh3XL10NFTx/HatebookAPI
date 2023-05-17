@@ -45,5 +45,7 @@ namespace Hatebook.Models
 
         [DataType(DataType.ImageUrl)]
         public string? ProfilePicture { get; set; }
+
+        public ICollection<string> Roles { get; set; }
     }
 }

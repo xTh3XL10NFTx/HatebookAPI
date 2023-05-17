@@ -11,7 +11,8 @@ namespace Hatebook.Services
         {
             var builder = service.AddIdentityCore<DbIdentityExtention>(q => q.User.RequireUniqueEmail = true);
 
-            //builder = new IdentityBuilder(DbIdentityExtention, typeof(IdentityRole), service);
+
+            builder = new IdentityBuilder(builder.UserType, typeof(IdentityRole), service);
             builder.AddEntityFrameworkStores<ApplicationDbContext>().AddDefaultTokenProviders();
             //  builder.AddSignInManager<SignInManager<DbIdentityExtention>>();
         }

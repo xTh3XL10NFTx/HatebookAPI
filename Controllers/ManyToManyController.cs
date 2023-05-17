@@ -61,15 +61,15 @@ namespace Hatebook.Controllers
         }
 
 
-        [Authorize]
+        [Authorize(Roles = "Administrator")]
         [HttpDelete("delete")]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> DeleteUserFromGroup(string email, string groupName)
         {
-            var claimValue = User.FindFirst(ClaimTypes.Email)?.Value;
-            if (claimValue == "IvelinTanev@gmail.com")
+            if (!User.IsInRole("Administrator"))
             {
-
-
+                return Forbid("You do not have the required role to access this endpoint.");
+            }
             var user = await _dependency.Context.dbIdentityExtentions.FirstOrDefaultAsync(u => u.Email == email);
             if (user == null)
             {
@@ -91,11 +91,7 @@ namespace Hatebook.Controllers
             _dependency.Context.manyToMany.Remove(userInGroup);
             await _dependency.Context.SaveChangesAsync();
             return Ok("User " + email + " deleted from group " + groupName + " successfully!");
-            }
-            else
-            {
-                return BadRequest("User is not authorized");
-            }
+
         }
     }
 }

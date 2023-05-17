@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+﻿using Hatebook.Configurations;
+using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 
 namespace Hatebook.Data
 {
@@ -11,6 +12,8 @@ namespace Hatebook.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.ApplyConfiguration(new RoleConfiguration());
         }
 
         public DbSet<DbIdentityExtention> dbIdentityExtentions { get; set; }
