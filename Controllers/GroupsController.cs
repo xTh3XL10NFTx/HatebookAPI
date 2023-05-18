@@ -1,4 +1,5 @@
 ﻿using Hatebook.Common;
+using Hatebook.Filters;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 
@@ -21,10 +22,12 @@ namespace Hatebook.Controllers
         public async Task<ActionResult<List<GroupsModel>>> Get() => Ok(await _dependency.Context.groups.ToListAsync());
 
         [HttpGet("get/{Name}")]
+        [ValidateModel]
         public async Task<ActionResult<List<GroupsModel>>> GetByName(string Name) => await _groupServices.GetGroupByName(Name);
 
         [Authorize]
         [HttpPost("CreateGroup")]
+        [ValidateModel]
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
@@ -39,9 +42,11 @@ namespace Hatebook.Controllers
         
 
         [HttpPut("editGroup/{name}")]
+        [ValidateModel]
         public async Task<IActionResult> UpdateGroup(GroupsModel request, string name) => await _groupServices.EditGroup(request, name);
 
         [HttpDelete("delete/{Name}")]
+        [ValidateModel]
         public async Task<ActionResult> Delete(string Name) => await _groupServices.DeleteGroup(Name);
 
     }

@@ -10,8 +10,8 @@ namespace Hatebook.Filters
             if (!context.ModelState.IsValid)
             {
                 var apiError = new ErrorResponse();
-                apiError.StatusCode = 400;
-                apiError.StatusPhrase = "Bad Request";
+                apiError.StatusCode = 422;
+                apiError.StatusPhrase = "Unprocessable entity";
                 apiError.Timestamp = DateTime.Now;
                 var errors = context.ModelState.AsEnumerable();
 

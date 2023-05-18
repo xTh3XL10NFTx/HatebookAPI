@@ -1,17 +1,12 @@
-﻿using Hatebook.Controllers;
-namespace Hatebook.Common
+﻿namespace Hatebook.Common
 {
-    [ApiExplorerSettings(IgnoreApi = true)]
-    public class GroupServices : GroupsController
+    public class GroupServices
     {
-        private static readonly GroupServices? groupServices;
         private readonly IControllerConstructor _dependency;
-        public GroupServices(IControllerConstructor dependency) : base(dependency, groupServices)
+        public GroupServices(IControllerConstructor dependency)
         {
             _dependency = dependency;
         }
-
-        [HttpPost("CreateGroupService")]
         public async Task<ActionResult> CreateGroupService(GroupsModel group, string claimsvalue )
         {
             group.Id = Guid.NewGuid();
@@ -19,22 +14,21 @@ namespace Hatebook.Common
             if (claimsvalue != null)
             {
                 _dependency.Logger.LogInformation($"Registration Attempt for {claimsvalue} ");
-                if (!ModelState.IsValid) return BadRequest(ModelState);
 
                 try
                 {
                     group.CreatorId = claimsvalue;
                     _dependency.Context.groups.Add(group);
                     await _dependency.Context.SaveChangesAsync();
-                    return Ok(group);
+                    return new OkObjectResult(group);
                 }
                 catch (Exception ex)
                 {
-                    _dependency.Logger.LogError(ex, $"Something Went Wrong in the {nameof(CreateGroup)}: Such group already exists.");
-                    return Problem($"Something Went Wrong in the {nameof(CreateGroup)}: Such group already exists.", statusCode: 500);
+                    _dependency.Logger.LogError(ex, $"Something Went Wrong in the {nameof(CreateGroupService)}: Such group already exists.");
+                    // return Problem($"Something Went Wrong in the {nameof(CreateGroup)}: Such group already exists.", statusCode: 500);
                 }
             }
-            return BadRequest("Claim not found.");
+            return new BadRequestObjectResult("Claim not found.");
         }
 
         [HttpGet("GetGroupByName")]
@@ -43,10 +37,10 @@ namespace Hatebook.Common
             var result = await _dependency.Context.groups.FirstOrDefaultAsync(u => u.Name == Name);
             if (result == null)
             {
-                return BadRequest("Group not found");
+                return new BadRequestObjectResult("Group not found");
             }
 
-            return Ok(result);
+            return new OkObjectResult(result);
         }
         [HttpDelete("DeleteGroup")]
         public async Task<ActionResult> DeleteGroup(string Name)
@@ -54,19 +48,18 @@ namespace Hatebook.Common
             var dbUser = await _dependency.Context.groups.FirstOrDefaultAsync(u => u.Name == Name);
 
             if (dbUser == null)
-                return BadRequest("Group not found");
+                return new BadRequestObjectResult("Group not found");
 
             _dependency.Context.groups.Remove(dbUser);
 
             await _dependency.Context.SaveChangesAsync();
-            return Ok("Group " + Name + " deleted successfully!");
+            return new OkObjectResult("Group " + Name + " deleted successfully!");
         }
-        [HttpPut("EditGroup")]
         public async Task<IActionResult> EditGroup(GroupsModel request, string name)
         {
             var dbUser = await _dependency.Context.groups.FirstOrDefaultAsync(u => u.Name == name);
             if (dbUser == null)
-                return BadRequest("User not found!");
+                return new BadRequestObjectResult("User not found!");
 
             dbUser.Name = request.Name;
             dbUser.Description = request.Description;
@@ -74,7 +67,7 @@ namespace Hatebook.Common
             dbUser.CreatorId = request.CreatorId;
 
             await _dependency.Context.SaveChangesAsync();
-            return Ok(dbUser);
+            return new OkObjectResult(dbUser);
         }
     }
 }

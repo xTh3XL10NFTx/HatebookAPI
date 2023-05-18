@@ -64,6 +64,7 @@ namespace Hatebook.Controllers
         // DELETE api/Account/delete/5
         [HttpDelete("delete/{email}")]
         [Authorize]
+        [ValidateModel]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]

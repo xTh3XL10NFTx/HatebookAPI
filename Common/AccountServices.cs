@@ -1,11 +1,7 @@
-﻿using Hatebook.Filters;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
-
-namespace Hatebook.Common
+﻿namespace Hatebook.Common
 {
     public class AccountServices
     {
-        private static readonly AccountServices? accountServices;
         private readonly IControllerConstructor _dependency;
         public AccountServices(IControllerConstructor dependency)
         {
@@ -35,7 +31,7 @@ namespace Hatebook.Common
         }
         public async Task<IActionResult> RegisterUser(HatebookMainModel request)
         {
-            _dependency.Logger.LogInformation($"Registration Attempt for {request.Email} ");
+            _dependency.Logger.LogInformation($"Registration Attempt for {request.Email}");
             var user = _dependency.Mapper.Map<DbIdentityExtention>(request);
                 user.UserName = request.Email;
                 var result = await _dependency.UserManager.CreateAsync(user, request.Password);
