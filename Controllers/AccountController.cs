@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Hatebook.Filters;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Hatebook.Controllers
 {
@@ -38,25 +39,25 @@ namespace Hatebook.Controllers
 
         // POST api/Account/Register
         [HttpPost("Register")]
+        [ValidateModel]
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Register([FromBody] HatebookMainModel request)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
-            return await _accountServices.RegisterUser(request, ModelState);
+            return await _accountServices.RegisterUser(request);
         }
 
         // POST api/Account/Register/LogIn
         [HttpPost("LogIn")]
+        [ValidateModel]
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> LogIn([FromBody] HatebookLogin request)
         {
-            if (!ModelState.IsValid) return BadRequest(ModelState);
             return await _accountServices.LogIntoUser(request);
         }
 

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+﻿using Hatebook.Filters;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Hatebook.Common
 {
@@ -32,23 +33,14 @@ namespace Hatebook.Common
                 return new UnauthorizedObjectResult("User does not exist");
             }
         }
-        public async Task<IActionResult> RegisterUser(HatebookMainModel request, ModelStateDictionary modelstate)
+        public async Task<IActionResult> RegisterUser(HatebookMainModel request)
         {
             _dependency.Logger.LogInformation($"Registration Attempt for {request.Email} ");
-
-                var user = _dependency.Mapper.Map<DbIdentityExtention>(request);
+            var user = _dependency.Mapper.Map<DbIdentityExtention>(request);
                 user.UserName = request.Email;
                 var result = await _dependency.UserManager.CreateAsync(user, request.Password);
 
                 await _dependency.UserManager.AddToRolesAsync(user, request.Roles);
-                if (!result.Succeeded)
-                {
-                    foreach (var error in result.Errors)
-                    {
-                    modelstate.AddModelError(error.Code, error.Description);
-                    }
-                    return new BadRequestObjectResult("Error");
-                }
 
                 return new AcceptedResult("", "User registered successfully!");
         }
