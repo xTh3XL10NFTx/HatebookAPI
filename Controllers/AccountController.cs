@@ -1,10 +1,4 @@
-﻿using Azure.Core;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
+﻿using Microsoft.AspNetCore.Authorization;
 
 namespace Hatebook.Controllers
 {
@@ -26,7 +20,10 @@ namespace Hatebook.Controllers
         [Authorize]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Get() => Ok(_dependency.Mapper.Map<IList<HatebookMainModel>>(await _dependency.Context.Users.ToListAsync()));
+        public async Task<IActionResult> Get()
+        {
+            return Ok(_dependency.Mapper.Map<IList<HatebookMainModel>>(await _dependency.Context.Users.ToListAsync()));
+        }
 
         // Get api/Account/get/5
         [HttpGet("get/{email}")]
@@ -34,7 +31,10 @@ namespace Hatebook.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Get(string email) => await _accountServices.GetUser(email);
+        public async Task<IActionResult> Get(string email)
+        {
+            return await _accountServices.GetUser(email);
+        }
 
         // POST api/Account/Register
         [HttpPost("Register")]
@@ -42,7 +42,11 @@ namespace Hatebook.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Register([FromBody] HatebookMainModel request) => await _accountServices.RegisterUser(request);
+        public async Task<IActionResult> Register([FromBody] HatebookMainModel request)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            return await _accountServices.RegisterUser(request, ModelState);
+        }
 
         // POST api/Account/Register/LogIn
         [HttpPost("LogIn")]
@@ -50,7 +54,11 @@ namespace Hatebook.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> LogIn([FromBody] HatebookLogin request) => await _accountServices.LogIntoUser(request);
+        public async Task<IActionResult> LogIn([FromBody] HatebookLogin request)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            return await _accountServices.LogIntoUser(request);
+        }
 
         // DELETE api/Account/delete/5
         [HttpDelete("delete/{email}")]
@@ -58,6 +66,6 @@ namespace Hatebook.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<ActionResult> Delete(string email) => await _accountServices.DeleteUser(email);
+        public async Task<IActionResult> Delete(string email) => await _accountServices.DeleteUser(email);
     }
 }

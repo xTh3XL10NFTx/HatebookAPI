@@ -20,7 +20,6 @@ builder.Services.ConfigureJWT(configuration);
 
 builder.Services.AddAutoMapper(typeof(MapperInitializer));
 builder.Services.AddScoped<IAuthManager, AuthManager>();
-builder.Services.AddScoped<AccountController, AccountServices>();
 builder.Services.AddScoped<IControllerConstructor, ControllerConstructor>();
 builder.Services.AddScoped<AccountController>();
 builder.Services.AddScoped<AccountServices>();

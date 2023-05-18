@@ -1,45 +1,40 @@
-﻿using Hatebook.Controllers;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Hatebook.Common
 {
-    [ApiExplorerSettings(IgnoreApi = true)]
-    public class AccountServices : AccountController
+    public class AccountServices
     {
         private static readonly AccountServices? accountServices;
         private readonly IControllerConstructor _dependency;
-        public AccountServices(IControllerConstructor dependency) : base(dependency, accountServices)
+        public AccountServices(IControllerConstructor dependency)
         {
             _dependency = dependency;
         }
-        [HttpPost("LogInUser")]
         public async Task<IActionResult> LogIntoUser(HatebookLogin request)
         {
             _dependency.Logger.LogInformation($"Login Attempt for {request.Email} ");
-            if (!ModelState.IsValid) return BadRequest(ModelState);
             try
             {
                 if (!await _dependency.AuthManager.ValidateUser(request))
                 {
-                    return Unauthorized("Wrong email or password");
+                    return new UnauthorizedObjectResult("Wrong email or password");
                 }
-                return Accepted(new { Token = await _dependency.AuthManager.CreateToken() });
+                return new AcceptedResult("User logged in", new { Token = await _dependency.AuthManager.CreateToken() });
             }
             catch (Exception ex)
             {
 
                 if (!await _dependency.AuthManager.ValidateUser(request))
                 {
-                    _dependency.Logger.LogError(ex, $"Something Went Wrong in the {nameof(LogIn)}");
-                    return Problem($"Something Went Wrong in the {nameof(LogIn)}", statusCode: 500);
+                    _dependency.Logger.LogError(ex, $"Something Went Wrong in the {nameof(LogIntoUser)}");
+                   // return new ObjectResult($"Something Went Wrong in the {nameof(LogIntoUser)}", StatusCodeResult: 500);
                 }
-                return Unauthorized();
+                return new UnauthorizedObjectResult("User does not exist");
             }
         }
-        [HttpPost("RegisterUser")]
-        public async Task<IActionResult> RegisterUser(HatebookMainModel request)
+        public async Task<IActionResult> RegisterUser(HatebookMainModel request, ModelStateDictionary modelstate)
         {
             _dependency.Logger.LogInformation($"Registration Attempt for {request.Email} ");
-            if (!ModelState.IsValid) return BadRequest(ModelState);
 
                 var user = _dependency.Mapper.Map<DbIdentityExtention>(request);
                 user.UserName = request.Email;
@@ -50,29 +45,27 @@ namespace Hatebook.Common
                 {
                     foreach (var error in result.Errors)
                     {
-                        ModelState.AddModelError(error.Code, error.Description);
+                    modelstate.AddModelError(error.Code, error.Description);
                     }
-                    return BadRequest(ModelState);
+                    return new BadRequestObjectResult("Error");
                 }
 
-                return Accepted("User registered successfully!");
+                return new AcceptedResult("", "User registered successfully!");
         }
-        [HttpPost("DeleteUser")]
-        public async Task<ActionResult> DeleteUser(string email)
+        public async Task<IActionResult> DeleteUser(string email)
         {
             var dbUser = await _dependency.Context.Users.FirstOrDefaultAsync(u => u.Email == email);
             if (dbUser == null)
-                return BadRequest("User not found.");
+                return new BadRequestObjectResult("User not found.");
             _dependency.Context.Remove(dbUser);
             await _dependency.Context.SaveChangesAsync();
-            return Ok("User " + email + " deleted successfully!");
+            return new OkObjectResult("User " + email + " deleted successfully!");
         }
-        [HttpGet("getById")]
         public async Task<IActionResult> GetUser(string email)
         {
             var user = await _dependency.Context.Users.FirstOrDefaultAsync(u => u.Email == email);
-            if (user == null) return BadRequest("User not found.");
-            return Ok(user);
+            if (user == null) return new BadRequestObjectResult("User not found.");
+            return new OkObjectResult(user);
         }
     }
 }
