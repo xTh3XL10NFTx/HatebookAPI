@@ -13,12 +13,12 @@ namespace Hatebook.Common
             ApplicationDbContext context,
             IAuthManager authManager)
         {
-            UserManager = userManager;
-            Logger = logger;
-            Mapper = mapper;
+            UserManager   = userManager;
+            Logger        = logger;
+            Mapper        = mapper;
             Configuration = configuration;
-            Context = context;
-            AuthManager = authManager;
+            Context       = context;
+            AuthManager   = authManager;
         }
 
         public UserManager<DbIdentityExtention> UserManager { get; }

@@ -1,5 +1,4 @@
-﻿using Hatebook.Common;
-using Hatebook.Filters;
+﻿using Hatebook.Filters;
 using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 
@@ -14,7 +13,7 @@ namespace Hatebook.Controllers
         public GroupsController(IControllerConstructor dependency,
                GroupServices groupServices)
         {
-            _dependency = dependency;
+            _dependency    = dependency;
             _groupServices = groupServices;
         }
 
@@ -38,8 +37,6 @@ namespace Hatebook.Controllers
             var claimValue = User.FindFirst(ClaimTypes.Email)?.Value;
             return await _groupServices.CreateGroupService(group,claimValue);
         }
-
-        
 
         [HttpPut("editGroup/{name}")]
         [ValidateModel]

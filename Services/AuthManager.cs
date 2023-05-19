@@ -11,17 +11,18 @@ namespace Hatebook.Services
         private readonly IConfiguration _configuration;
         private DbIdentityExtention _user;
 
-        public AuthManager(UserManager<DbIdentityExtention> userManager, IConfiguration configuration)
+        public AuthManager(UserManager<DbIdentityExtention> userManager,
+               IConfiguration configuration)
         {
-            _userManager = userManager;
+            _userManager   = userManager;
             _configuration = configuration;
         }
 
         public async Task<string> CreateToken()
         {
             var signingCredentials = GetSigningCredentials();
-            var claims = await GetClaims();
-            var token = GenerateTokenOptions(signingCredentials, claims);
+            var claims             = await GetClaims();
+            var token              = GenerateTokenOptions(signingCredentials, claims);
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
@@ -29,8 +30,8 @@ namespace Hatebook.Services
         private JwtSecurityToken GenerateTokenOptions(SigningCredentials signingCredentials, List<Claim> claims)
         {
             var jwtSettings = _configuration.GetSection("Jwt");
-            var expiration = DateTime.Now.AddDays(Convert.ToDouble(jwtSettings.GetSection("lifetime").Value));
-            var token = new JwtSecurityToken(
+            var expiration  = DateTime.Now.AddDays(Convert.ToDouble(jwtSettings.GetSection("lifetime").Value));
+            var token       = new JwtSecurityToken(
                 issuer: jwtSettings["Issuer"],
                 audience: jwtSettings["Audience"],
                 claims: claims,
@@ -64,7 +65,7 @@ namespace Hatebook.Services
         private SigningCredentials GetSigningCredentials()
         {
             var jwtSettings = _configuration.GetSection("Jwt");
-            var secret = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]));
+            var secret      = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]));
 
             return new SigningCredentials(secret, SecurityAlgorithms.HmacSha256);
         }

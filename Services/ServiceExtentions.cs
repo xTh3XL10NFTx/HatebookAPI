@@ -23,18 +23,11 @@ namespace Hatebook.Services
             //    var secret = Configuration["Jwt:Key"];
 
             var jwtSettings = Configuration.GetSection("Jwt");
-            service.AddAuthorization(options =>
-            {
-                options.AddPolicy("DeletePermission", policy =>
-                {
-                    policy.RequireRole("Admin"); // Replace "Admin" with the appropriate role name
-                });
-            });
             service.AddAuthentication(o =>
             {
                 o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-                o.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-                o.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+                o.DefaultChallengeScheme    = JwtBearerDefaults.AuthenticationScheme;
+                o.DefaultScheme             = JwtBearerDefaults.AuthenticationScheme;
             })
                 .AddJwtBearer(o =>
                 {
@@ -70,14 +63,14 @@ namespace Hatebook.Services
                     o.IncludeErrorDetails = true;
                     o.TokenValidationParameters = new TokenValidationParameters
                     {
-                        ValidateIssuer = true,
-                        ValidateAudience = true,
-                        ValidateLifetime = true,
+                        ValidateIssuer           = true,
+                        ValidateAudience         = true,
+                        ValidateLifetime         = true,
                         ValidateIssuerSigningKey = true,
-                        ClockSkew = TimeSpan.Zero,
-                        ValidIssuer = jwtSettings["Issuer"],
-                        ValidAudience = jwtSettings["Audience"],
-                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]))
+                        ClockSkew                = TimeSpan.Zero,
+                        ValidIssuer              = jwtSettings["Issuer"],
+                        ValidAudience            = jwtSettings["Audience"],
+                        IssuerSigningKey         = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]))
                     };
                 });
         }

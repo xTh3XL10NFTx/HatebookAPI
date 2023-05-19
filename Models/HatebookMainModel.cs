@@ -1,7 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel;
 using System.Text.Json.Serialization;
-using Hatebook.Common;
 
 namespace Hatebook.Models
 {
@@ -14,7 +13,8 @@ namespace Hatebook.Models
         [DataType(DataType.EmailAddress)]
         public string Email { get; set; }
         [Required]
-        [MinLength(6, ErrorMessage = "The password must be of minimum 6 characters!")]
+        [DataType(DataType.Password)]
+        //[MinLength(6, ErrorMessage = "The password must be of minimum 6 characters!")]
         public string Password { get; set; }
     }
 

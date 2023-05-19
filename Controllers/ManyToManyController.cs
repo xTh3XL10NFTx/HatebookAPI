@@ -1,4 +1,5 @@
 ﻿using Hatebook.Common;
+using Hatebook.Filters;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -17,7 +18,7 @@ namespace Hatebook.Controllers
             _dependency = dependency;
         }
 
-        [HttpGet("get")]
+        [HttpGet("allUsersInGroups")]
         public async Task<ActionResult<List<GroupsModel>>> Get()
         {
             var usersInGroups = await _dependency.Context.manyToMany
@@ -29,7 +30,7 @@ namespace Hatebook.Controllers
             return Ok(result);
         }
 
-        [HttpPost("create")]
+        [HttpPost("addUser")]
         public async Task<IActionResult> MoveUserToGroup(string email, string groupName)
         {
 
@@ -47,10 +48,10 @@ namespace Hatebook.Controllers
 
             var userInGroup = new UsersInGroups
             {
-                UserId = user.Email,
+                UserId              = user.Email,
                 DbIdentityExtention = user,
-                GroupId = group.Id,
-                GroupsModel = group
+                GroupId             = group.Id,
+                GroupsModel         = group
             };
 
             _dependency.Context.manyToMany.Add(userInGroup);
@@ -59,17 +60,45 @@ namespace Hatebook.Controllers
             return Ok("User added to group.");
 
         }
+        
+        
+        [HttpPost("createAdmin")]
+        public async Task<IActionResult> MoveUserToAdmin(string email, string groupName)
+        {
+
+            var user = await _dependency.Context.dbIdentityExtentions.FirstOrDefaultAsync(u => u.Email == email);
+            if (user == null)
+            {
+                return BadRequest("User not found");
+            }
+
+            var group = await _dependency.Context.groups.FirstOrDefaultAsync(g => g.Name == groupName);
+            if (group == null)
+            {
+                return BadRequest("Group not found");
+            }
+
+            var groupAdmins = new GroupAdmins
+            {
+                UserId              = user.Email,
+                DbIdentityExtention = user,
+                GroupId             = group.Id,
+                GroupsModel         = group
+            };
+
+            _dependency.Context.GroupAdmins.Add(groupAdmins);
+            await _dependency.Context.SaveChangesAsync();
+
+            return Ok("User changed to admin.");
+
+        }
 
 
-        [Authorize(Roles = "Administrator")]
-        [HttpDelete("delete")]
+        [HttpDelete("removeUser")]
+        [GroupAdminAuthorization]
         [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> DeleteUserFromGroup(string email, string groupName)
         {
-            if (!User.IsInRole("Administrator"))
-            {
-                return Forbid("You do not have the required role to access this endpoint.");
-            }
             var user = await _dependency.Context.dbIdentityExtentions.FirstOrDefaultAsync(u => u.Email == email);
             if (user == null)
             {

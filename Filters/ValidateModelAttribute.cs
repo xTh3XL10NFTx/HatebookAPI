@@ -9,11 +9,11 @@ namespace Hatebook.Filters
         {
             if (!context.ModelState.IsValid)
             {
-                var apiError = new ErrorResponse();
-                apiError.StatusCode = 422;
+                var apiError          = new ErrorResponse();
+                apiError.StatusCode   = 422;
                 apiError.StatusPhrase = "Unprocessable entity";
-                apiError.Timestamp = DateTime.Now;
-                var errors = context.ModelState.AsEnumerable();
+                apiError.Timestamp    = DateTime.Now;
+                var errors            = context.ModelState.AsEnumerable();
 
                 foreach( var error in errors )
                 {
@@ -22,7 +22,6 @@ namespace Hatebook.Filters
                         apiError.Errors.Add( inner.ErrorMessage );
                     }
                 }
-
                 context.Result = new BadRequestObjectResult(apiError );
             }
         }

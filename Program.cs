@@ -8,12 +8,16 @@ global using Hatebook.Models;
 using Hatebook.Configurations;
 using Microsoft.OpenApi.Models;
 using Hatebook.Controllers;
+using Hatebook.Filters;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddControllers(options =>
+{
+    options.Filters.Add(typeof(ValidateModelAttribute)); // Add the filter globally
+});
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DbConnection")));
 builder.Services.ConfigureJWT(configuration);

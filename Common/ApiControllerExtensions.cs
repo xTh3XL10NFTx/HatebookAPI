@@ -8,7 +8,6 @@
             {
                 return new BadRequestObjectResult(controller.ModelState);
             }
-
             return null;
         }
     }

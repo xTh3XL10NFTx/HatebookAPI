@@ -5,10 +5,6 @@ namespace Hatebook.Models
 {
     public class GroupsModel
     {
-        public GroupsModel()
-        {
-            Id = Guid.NewGuid();
-        }
         [Key]
         public Guid Id { get; set; }
         [Required]
