@@ -5,16 +5,10 @@ namespace Hatebook.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class AccountController : ControllerBase
+    public class AccountController : DependencyInjection
     {
-        private readonly IControllerConstructor _dependency;
         private readonly AccountServices _accountServices;
-        public AccountController(IControllerConstructor dependency,
-               AccountServices accountServices)
-        {
-            _dependency = dependency;
-            _accountServices = accountServices;
-        }
+        public AccountController(IControllerConstructor dependency, AccountServices accountServices) : base(dependency) => _accountServices = accountServices;
 
         // Get api/Account/get
         [HttpGet("get")]
@@ -46,7 +40,7 @@ namespace Hatebook.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Register([FromBody] HatebookMainModel request)
         {
-            return await _accountServices.RegisterUser(request);
+            return await _accountServices.RegisterUserService(request,ModelState);
         }
 
         // POST api/Account/Register/LogIn
@@ -58,7 +52,7 @@ namespace Hatebook.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> LogIn([FromBody] HatebookLogin request)
         {
-            return await _accountServices.LogIntoUser(request);
+            return await _accountServices.LogIntoUserService(request, ModelState);
         }
 
         // DELETE api/Account/delete/5
@@ -68,6 +62,6 @@ namespace Hatebook.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-        public async Task<IActionResult> Delete(string email) => await _accountServices.DeleteUser(email);
+        public async Task<IActionResult> Delete(string email) => await _accountServices.DeleteUserService(email);
     }
 }

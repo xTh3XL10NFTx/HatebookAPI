@@ -1,10 +1,9 @@
 ﻿namespace Hatebook.Common
 {
-    public class GroupServices
+    public class GroupServices : DependencyInjection
     {
-        private readonly IControllerConstructor _dependency;
-        public GroupServices(IControllerConstructor dependency) => _dependency = dependency;
-        public async Task<ActionResult> CreateGroupService(GroupsModel group, string claimsvalue )
+        public GroupServices(IControllerConstructor dependency) : base(dependency) { }
+        public async Task<IActionResult> CreateGroupService(GroupsModel group, string claimsvalue)
         {
             group.Id = Guid.NewGuid();
             // Use the claim value as needed
@@ -28,18 +27,17 @@
             return new BadRequestObjectResult("Claim not found.");
         }
 
-        [HttpGet("GetGroupByName")]
-        public async Task<ActionResult> GetGroupByName(string Name)
+        public async Task<ActionResult> GetGroupByNameService(string Name)
         {
-            GroupsModel user = await GetModelByName(Name);
+            GroupsModel user = await GetModelByNameService(Name);
             if (user == null) return new BadRequestObjectResult("Group not found");
 
             return new OkObjectResult(user);
         }
-        [HttpDelete("DeleteGroup")]
-        public async Task<ActionResult> DeleteGroup(string Name)
+
+        public async Task<ActionResult> DeleteGroupService(string Name)
         {
-            GroupsModel user = await GetModelByName(Name);
+            GroupsModel user = await GetModelByNameService(Name);
             if (user == null) return new BadRequestObjectResult("Group not found");
 
             _dependency.Context.groups.Remove(user);
@@ -47,21 +45,21 @@
             await _dependency.Context.SaveChangesAsync();
             return new OkObjectResult("Group " + Name + " deleted successfully!");
         }
-        public async Task<IActionResult> EditGroup(GroupsModel request, string name)
+        public async Task<IActionResult> EditGroupService(GroupsModel request, string name)
         {
-            GroupsModel user =  await GetModelByName(name);
+            GroupsModel user = await GetModelByNameService(name);
             if (user == null) return new BadRequestObjectResult("User not found!");
 
-            user.Name        = request.Name;
+            user.Name = request.Name;
             user.Description = request.Description;
             user.CreatedDate = request.CreatedDate;
-            user.CreatorId   = request.CreatorId;
+            user.CreatorId = request.CreatorId;
 
             await _dependency.Context.SaveChangesAsync();
             return new OkObjectResult(user);
         }
 
-        public async Task<GroupsModel> GetModelByName(string name)
+        public async Task<GroupsModel> GetModelByNameService(string name)
         {
             var dbUser = await _dependency.Context.groups.FirstOrDefaultAsync(u => u.Name == name);
             return dbUser;

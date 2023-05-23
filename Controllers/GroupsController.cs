@@ -6,23 +6,17 @@ namespace Hatebook.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class GroupsController : ControllerBase
+    public class GroupsController : DependencyInjection
     {
-        private readonly IControllerConstructor _dependency;
         private readonly GroupServices _groupServices;
-        public GroupsController(IControllerConstructor dependency,
-               GroupServices groupServices)
-        {
-            _dependency    = dependency;
-            _groupServices = groupServices;
-        }
+        public GroupsController(IControllerConstructor dependency, GroupServices groupServices) : base(dependency) => _groupServices = groupServices;
 
         [HttpGet("get")]
         public async Task<ActionResult<List<GroupsModel>>> Get() => Ok(await _dependency.Context.groups.ToListAsync());
 
         [HttpGet("get/{Name}")]
         [ValidateModel]
-        public async Task<ActionResult<List<GroupsModel>>> GetByName(string Name) => await _groupServices.GetGroupByName(Name);
+        public async Task<ActionResult<List<GroupsModel>>> GetByName(string Name) => await _groupServices.GetGroupByNameService(Name);
 
         [Authorize]
         [HttpPost("CreateGroup")]
@@ -40,11 +34,11 @@ namespace Hatebook.Controllers
 
         [HttpPut("editGroup/{name}")]
         [ValidateModel]
-        public async Task<IActionResult> UpdateGroup(GroupsModel request, string name) => await _groupServices.EditGroup(request, name);
+        public async Task<IActionResult> UpdateGroup(GroupsModel request, string name) => await _groupServices.EditGroupService(request, name);
 
         [HttpDelete("delete/{Name}")]
         [ValidateModel]
-        public async Task<ActionResult> Delete(string Name) => await _groupServices.DeleteGroup(Name);
+        public async Task<ActionResult> Delete(string Name) => await _groupServices.DeleteGroupService(Name);
 
     }
 }   

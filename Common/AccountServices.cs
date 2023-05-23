@@ -1,13 +1,12 @@
-﻿namespace Hatebook.Common
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+
+namespace Hatebook.Common
 {
-    public class AccountServices
+    public class AccountServices:DependencyInjection
     {
-        private readonly IControllerConstructor _dependency;
-        public AccountServices(IControllerConstructor dependency)
-        {
-            _dependency = dependency;
-        }
-        public async Task<IActionResult> LogIntoUser(HatebookLogin request)
+        public AccountServices(IControllerConstructor dependency) : base(dependency) { }
+
+        public async Task<IActionResult> LogIntoUserService(HatebookLogin request, ModelStateDictionary state)
         {
             _dependency.Logger.LogInformation($"Login Attempt for {request.Email} ");
             try
@@ -23,27 +22,35 @@
 
                 if (!await _dependency.AuthManager.ValidateUser(request))
                 {
-                    _dependency.Logger.LogError(ex, $"Something Went Wrong in the {nameof(LogIntoUser)}");
+                    _dependency.Logger.LogError(ex, $"Something Went Wrong in the {nameof(LogIntoUserService)}");
                     // return new ObjectResult($"Something Went Wrong in the {nameof(LogIntoUser)}", StatusCodeResult: 500);
                 }
                 return new UnauthorizedObjectResult("User does not exist");
             }
         }
-        public async Task<IActionResult> RegisterUser(HatebookMainModel request)
+        public async Task<IActionResult> RegisterUserService(HatebookMainModel request, ModelStateDictionary state)
         {
             _dependency.Logger.LogInformation($"Registration Attempt for {request.Email}");
             var user = _dependency.Mapper.Map<DbIdentityExtention>(request);
 
             user.UserName = request.Email;
+            var result = await _dependency.UserManager.CreateAsync(user, request.Password);
 
-            await _dependency.UserManager.CreateAsync(user, request.Password);
-            await _dependency.UserManager.AddToRolesAsync(user, request.Roles);
-
+            if (!result.Succeeded)
+            {
+                foreach (var error in result.Errors)
+                {
+                    state.AddModelError(error.Code, error.Description);
+                }
+                return new BadRequestObjectResult(state);
+            }
+            // Assign the "User" role to the user by default
+            await _dependency.UserManager.AddToRoleAsync(user, "User");
             return new AcceptedResult("", "User registered successfully!");
         }
-        public async Task<IActionResult> DeleteUser(string email)
+        public async Task<IActionResult> DeleteUserService(string email)
         {
-            GroupsModel user = await GetModelByName(email);
+            GroupsModel user = await GetModelByNameService(email);
             if (user == null) return new BadRequestObjectResult("User not found.");
 
             _dependency.Context.Remove(user);
@@ -53,12 +60,12 @@
         }
         public async Task<IActionResult> GetUser(string email)
         {
-            GroupsModel user = await GetModelByName(email);
+            GroupsModel user = await GetModelByNameService(email);
             if (user == null) return new BadRequestObjectResult("User not found.");
 
             return new OkObjectResult(user);
         }
-        public async Task<GroupsModel> GetModelByName(string name)
+        public async Task<GroupsModel> GetModelByNameService(string name)
         {
             var dbUser = await _dependency.Context.groups.FirstOrDefaultAsync(u => u.Name == name);
             return dbUser;

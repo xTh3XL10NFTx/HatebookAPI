@@ -1,5 +1,4 @@
-﻿using Azure.Core.Extensions;
-using Microsoft.AspNetCore.Mvc.Filters;
+﻿using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace Hatebook.Filters
 {
