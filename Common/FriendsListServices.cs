@@ -1,11 +1,13 @@
 ﻿namespace Hatebook.Common
 {
-    public class UsersInGroupsServces: DependencyInjection
+    public class FriendsListServces: DependencyInjection
     {
-        public UsersInGroupsServces(IControllerConstructor dependency) : base(dependency) { }
+        public FriendsListServces(IControllerConstructor dependency) : base(dependency) { }
+
+
+
         public async Task<IActionResult> MoveUserToGroupService(string email, string groupName)
         {
-
             var user = await _dependency.Context.dbIdentityExtentions.FirstOrDefaultAsync(u => u.Email == email);
             if (user == null)
             {

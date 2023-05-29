@@ -3,10 +3,12 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace Hatebook.Migrations
 {
     /// <inheritdoc />
-    public partial class MainMigration : Migration
+    public partial class Initial : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -53,6 +55,21 @@ namespace Hatebook.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Friends",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserId1 = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UserId2 = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatorId = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Friends", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -177,6 +194,31 @@ namespace Hatebook.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "GroupAdmins",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    GroupId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_GroupAdmins", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_GroupAdmins_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_GroupAdmins_groups_GroupId",
+                        column: x => x.GroupId,
+                        principalTable: "groups",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "manyToMany",
                 columns: table => new
                 {
@@ -199,6 +241,15 @@ namespace Hatebook.Migrations
                         principalTable: "groups",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.InsertData(
+                table: "AspNetRoles",
+                columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
+                values: new object[,]
+                {
+                    { "0a57a12b-fdae-4ae3-a3f3-e7e869298e33", "c70ce7ea-97bb-4a17-a1e0-25cbd5033f23", "Administrator", "ADMINISTRATOR" },
+                    { "7d3d60ae-604d-42c5-8c5e-1e491abe0f8a", "0bdfdcdd-a8a2-44a2-af34-c4b9967db7f4", "User", "USER" }
                 });
 
             migrationBuilder.CreateIndex(
@@ -241,6 +292,16 @@ namespace Hatebook.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_GroupAdmins_GroupId",
+                table: "GroupAdmins",
+                column: "GroupId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_GroupAdmins_UserId",
+                table: "GroupAdmins",
+                column: "UserId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_manyToMany_GroupId",
                 table: "manyToMany",
                 column: "GroupId");
@@ -268,6 +329,12 @@ namespace Hatebook.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUserTokens");
+
+            migrationBuilder.DropTable(
+                name: "Friends");
+
+            migrationBuilder.DropTable(
+                name: "GroupAdmins");
 
             migrationBuilder.DropTable(
                 name: "manyToMany");

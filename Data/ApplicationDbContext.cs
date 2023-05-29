@@ -20,5 +20,6 @@ namespace Hatebook.Data
         public DbSet<GroupsModel> groups                       { get; set; }
         public DbSet<UsersInGroups> manyToMany                 { get; set; }
         public DbSet<GroupAdmins> GroupAdmins                  { get; set; }
+        public DbSet<FriendsList> Friends                     { get; set; }
     }
 }

@@ -104,6 +104,33 @@ namespace Hatebook.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
+            modelBuilder.Entity("Hatebook.Models.FriendsList", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("CreatorId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId1")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserId2")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Friends");
+                });
+
             modelBuilder.Entity("Hatebook.Models.GroupAdmins", b =>
                 {
                     b.Property<Guid>("Id")
@@ -203,15 +230,15 @@ namespace Hatebook.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "345adaaf-e73d-4833-9060-d0e21b8086ac",
-                            ConcurrencyStamp = "8f618ef5-bb6d-4983-942f-9ad827083a0a",
+                            Id = "7d3d60ae-604d-42c5-8c5e-1e491abe0f8a",
+                            ConcurrencyStamp = "0bdfdcdd-a8a2-44a2-af34-c4b9967db7f4",
                             Name = "User",
                             NormalizedName = "USER"
                         },
                         new
                         {
-                            Id = "0f6e7ab7-3285-43b3-ac35-44d7a42bb64e",
-                            ConcurrencyStamp = "8d5ac8f1-10a9-4da3-9938-edbcee12fe23",
+                            Id = "0a57a12b-fdae-4ae3-a3f3-e7e869298e33",
+                            ConcurrencyStamp = "c70ce7ea-97bb-4a17-a1e0-25cbd5033f23",
                             Name = "Administrator",
                             NormalizedName = "ADMINISTRATOR"
                         });

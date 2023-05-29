@@ -9,6 +9,7 @@ using Hatebook.Configurations;
 using Microsoft.OpenApi.Models;
 using Hatebook.Controllers;
 using Hatebook.Filters;
+using Hatebook.Hubs;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -31,7 +32,10 @@ builder.Services.AddScoped<IControllerConstructor, ControllerConstructor>();
 builder.Services.AddScoped<AccountController>();
 builder.Services.AddScoped<AccountServices>();
 builder.Services.AddScoped<GroupServices>();
+builder.Services.AddScoped<UsersInGroupsServces>();
+builder.Services.AddScoped<FriendsListServces>();
 builder.Services.ConfigureIdentity();
+builder.Services.AddSignalR();
 
 builder.Services.AddEndpointsApiExplorer();
 
@@ -90,5 +94,6 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHub<ChatHub>("/chathub");
 
 app.Run();

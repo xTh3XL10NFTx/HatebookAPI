@@ -30,7 +30,7 @@ namespace Hatebook.Services
         private JwtSecurityToken GenerateTokenOptions(SigningCredentials signingCredentials, List<Claim> claims)
         {
             var jwtSettings = _configuration.GetSection("Jwt");
-            var expiration  = DateTime.Now.AddDays(Convert.ToDouble(jwtSettings.GetSection("lifetime").Value));
+            var expiration  = DateTime.Now.AddHours(Convert.ToDouble(jwtSettings.GetSection("lifetime").Value));
             var token       = new JwtSecurityToken(
                 issuer: jwtSettings["Issuer"],
                 audience: jwtSettings["Audience"],
