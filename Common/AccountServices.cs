@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
+﻿using Hatebook.Models;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using System.Data;
 
 namespace Hatebook.Common
 {
@@ -33,6 +35,16 @@ namespace Hatebook.Common
             _dependency.Logger.LogInformation($"Registration Attempt for {request.Email}");
             var user = _dependency.Mapper.Map<DbIdentityExtention>(request);
 
+            foreach (var roleName in request.Roles)
+            {
+                var role = new Role
+                {
+                    Id = Guid.NewGuid(),
+                    Name = roleName.Name
+                };
+
+                await _dependency.UserManager.AddToRoleAsync(user, roleName.Name);
+            }
             user.UserName = request.Email;
             var result = await _dependency.UserManager.CreateAsync(user, request.Password);
 

@@ -2,9 +2,13 @@
 {
     public class GroupServices : DependencyInjection
     {
-        public GroupServices(IControllerConstructor dependency) : base(dependency) { }
+        private readonly UsersInGroupsServces _usersInGroupsServices;
+        public GroupServices(IControllerConstructor dependency, UsersInGroupsServces usersInGroupsServices) : base(dependency) => _usersInGroupsServices = usersInGroupsServices;
         public async Task<IActionResult> CreateGroupService(GroupsModel group, string claimsvalue)
         {
+            var ifExists = _dependency.Context.groups.SingleOrDefault(f => (f.Name == group.Name));
+            if (ifExists == null)
+            {
             group.Id = Guid.NewGuid();
             // Use the claim value as needed
             if (claimsvalue != null)
@@ -16,7 +20,13 @@
                     group.CreatorId = claimsvalue;
                     _dependency.Context.groups.Add(group);
                     await _dependency.Context.SaveChangesAsync();
-                    return new OkObjectResult(group);
+
+                        await _usersInGroupsServices.MoveUserToGroupService(claimsvalue, group.Name);
+                        await _usersInGroupsServices.MoveUserToAdminService(claimsvalue, group.Name);
+
+
+
+                        return new OkObjectResult(group);
                 }
                 catch (Exception ex)
                 {
@@ -25,6 +35,8 @@
                 }
             }
             return new BadRequestObjectResult("Claim not found.");
+            }
+            return new BadRequestObjectResult("A group with this name already exists.");
         }
 
         public async Task<ActionResult> GetGroupByNameService(string Name)

@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.SignalR;
-using Microsoft.EntityFrameworkCore;
 
 namespace Hatebook.Hubs
 {
@@ -9,10 +8,75 @@ namespace Hatebook.Hubs
         private readonly IControllerConstructor _dependency;
         public ChatHub(IControllerConstructor dependency) => _dependency = dependency;
 
-        public async Task SendMessageToGroup(Guid groupId, string user, string message)
+        public string userName = null;
+        public async Task JoinGroupChat(string groupNameVar, string iuserName)
+        {
+            Guid? groupId = _dependency.Context.groups.SingleOrDefault(u => u.Name == groupNameVar)?.Id;
+
+            // Check if the group exists
+            if (groupId==null)
+            {
+                // Group does not exist
+                return;
+            }
+
+            userName = iuserName;
+            string groupName = groupId.ToString();
+
+            // Add the connection to the group
+            await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+
+            // Send a welcome message to the user
+            await Clients.Caller.SendAsync("ReceiveSystemMessage", $"You have joined the group chat ({groupName}).");
+
+            // Send a notification to the group about the new member
+            await Clients.Group(groupName).SendAsync("ReceiveSystemMessage", $"{userName} has joined the group chat ({groupName}).");
+        }
+
+        public async Task JoinFriendChat(string friendNameVar, string iuserName)
+        {
+            string friendId = _dependency.Context.Users.SingleOrDefault(u => u.Email == friendNameVar)?.Id;
+            string userNameId = _dependency.Context.Users.SingleOrDefault(u => u.Email == iuserName)?.Id;
+            if (friendId == null)
+            {
+                // Group does not exist
+                return;
+            }
+            // Implement your logic to check if the user is friends with the given friendId
+            bool areFriends = _dependency.Context.Friends.Any(f =>
+                (f.UserId1 == userNameId && f.UserId2 == friendId) ||
+                (f.UserId1 == friendId && f.UserId2 == userNameId));
+
+            if (!areFriends)
+            {
+                // Users are not friends
+                return;
+            }
+
+            string groupId = GetFriendGroupId(userNameId, friendId);
+
+            // Add the connection to the group
+            await Groups.AddToGroupAsync(Context.ConnectionId, groupId);
+
+            // Send a welcome message to the user
+            await Clients.Caller.SendAsync("ReceiveSystemMessage", $"You have joined the friend chat with {friendNameVar}.");
+
+            // Send a notification to the group about the new member
+            await Clients.Group(groupId).SendAsync("ReceiveSystemMessage", $"{userName} has joined the friend chat.");
+        }
+
+        public async Task SendMessage(string message)
+        {
+            string user = userName;
+
+            // Broadcast the message to all connected clients
+            await Clients.All.SendAsync("ReceiveMessage", user, message);
+        }
+
+        public async Task SendMessageToGroup(string message, Guid groupId)
         {
             // Check if the user is part of the group
-            bool isMember = _dependency.Context.manyToMany.Any(ug => ug.UserId == user && ug.GroupId == groupId);
+            bool isMember = _dependency.Context.manyToMany.Any(ug => ug.UserId == userName && ug.GroupId == groupId);
             if (!isMember)
             {
                 // User is not authorized to send messages in this group
@@ -20,15 +84,18 @@ namespace Hatebook.Hubs
             }
 
             // Send the received message to the group
-            await Clients.Group(groupId.ToString()).SendAsync("ReceiveMessage", user, message);
+            await Clients.Group(groupId.ToString()).SendAsync("ReceiveGroupMessage", userName, message);
         }
 
-        public async Task SendMessageToFriend(string senderId, string receiverId, string user, string message)
+        public async Task SendMessageToFriend(string message, string friendName)
         {
+            string userNameId = _dependency.Context.Users.SingleOrDefault(u => u.Email == userName)?.Id;
+            string friendId = _dependency.Context.Users.SingleOrDefault(u => u.Email == friendName)?.Id;
+
             // Check if the sender and receiver are friends
             bool areFriends = _dependency.Context.Friends.Any(f =>
-                (f.UserId1 == senderId && f.UserId2 == receiverId) ||
-                (f.UserId1 == receiverId && f.UserId2 == senderId));
+                (f.UserId1 == userNameId && f.UserId2 == friendId) ||
+                (f.UserId1 == friendId && f.UserId2 == userNameId));
 
             if (!areFriends)
             {
@@ -36,20 +103,17 @@ namespace Hatebook.Hubs
                 return;
             }
 
-            // Create a unique group ID for the friend chat
-            string groupId = GetFriendGroupId(senderId, receiverId);
+            string groupId = GetFriendGroupId(userNameId, friendId);
 
             // Send the received message to the friend's group
-            await Clients.Group(groupId).SendAsync("ReceiveMessage", user, message);
+            await Clients.Group(groupId).SendAsync("ReceiveFriendMessage", userName, message);
         }
 
         public override async Task OnConnectedAsync()
         {
-            string userId = Context.UserIdentifier;
-
             // Get the groups the user belongs to
             var groupIds = _dependency.Context.manyToMany
-                .Where(ug => ug.UserId == userId)
+                .Where(ug => ug.UserId == userName)
                 .Select(ug => ug.GroupId)
                 .ToList();
 
@@ -91,12 +155,6 @@ namespace Hatebook.Hubs
             string[] sortedIds = new[] { senderId, receiverId }.OrderBy(id => id).ToArray();
 
             return $"FriendChat_{sortedIds[0]}_{sortedIds[1]}";
-        }
-
-        // Helper method to get all available groups
-        private string[] GetAllGroups()
-        {
-            return _dependency.Context.groups.Select(g => g.Id.ToString()).ToArray();
         }
     }
 }
