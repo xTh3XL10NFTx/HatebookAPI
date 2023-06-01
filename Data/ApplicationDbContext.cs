@@ -16,13 +16,13 @@ namespace Hatebook.Data
             modelBuilder.ApplyConfiguration(new RoleConfiguration());
             
             modelBuilder.Entity<Comment>()
-        .HasOne(c => c.User)
+        .HasOne(c => c.DbIdentityExtention)
         .WithMany()
         .HasForeignKey(c => c.UserId)
         .OnDelete(DeleteBehavior.Restrict);
             
             modelBuilder.Entity<Like>()
-        .HasOne(c => c.User)
+        .HasOne(c => c.DbIdentityExtention)
         .WithMany()
         .HasForeignKey(c => c.UserId)
         .OnDelete(DeleteBehavior.Restrict);

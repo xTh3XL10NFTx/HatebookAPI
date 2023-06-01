@@ -10,6 +10,10 @@ using Microsoft.OpenApi.Models;
 using Hatebook.Controllers;
 using Hatebook.Filters;
 using Hatebook.Hubs;
+using FluentValidation;
+using Hatebook.Models.Validators;
+using FluentValidation.AspNetCore;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -17,7 +21,8 @@ var configuration = builder.Configuration;
 builder.Services.AddControllers(options =>
 {
     options.Filters.Add(typeof(ValidateModelAttribute)); // Add the filter globally
-});
+}).AddFluentValidation(fv =>
+    fv.RegisterValidatorsFromAssembly(Assembly.GetExecutingAssembly()));
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DbConnection")));
 builder.Services.ConfigureJWT(configuration);
@@ -26,6 +31,7 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
     options.SuppressModelStateInvalidFilter = true;
 });
 
+builder.Services.AddValidatorsFromAssemblyContaining<HatebookMainModelValidator>();
 builder.Services.AddAutoMapper(typeof(MapperInitializer));
 builder.Services.AddScoped<IAuthManager, AuthManager>();
 builder.Services.AddScoped<IControllerConstructor, ControllerConstructor>();
@@ -61,7 +67,7 @@ void AddSwaggerDoc(IServiceCollection services)
             {
                 new OpenApiSecurityScheme
                 {
-                    Reference = new OpenApiReference 
+                    Reference = new OpenApiReference
                     {
                         Type = ReferenceType.SecurityScheme,
                         Id = "Bearer"

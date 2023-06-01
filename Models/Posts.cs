@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.RegularExpressions;
 
 namespace Hatebook.Models
 {
@@ -19,11 +20,10 @@ namespace Hatebook.Models
     {
         public int Id { get; set; }
         public int PostId { get; set; }
-        public string UserId { get; set; } // Assuming string type for user ID, change as per your setup
-
+        public string UserId { get; set; }
         public Post Post { get; set; } // Navigation property to the liked post
-        [ForeignKey("UserId")]
-        public HatebookMainModel User { get; set; }
+        [ForeignKey(nameof(UserId))]
+        public DbIdentityExtention DbIdentityExtention { get; set; }
     }
 
     public class Comment
@@ -31,10 +31,9 @@ namespace Hatebook.Models
         public int Id { get; set; }
         public string Content { get; set; }
         public int PostId { get; set; }
-        public string UserId { get; set; } // Assuming string type for user ID, change as per your setup
-
+        public string UserId { get; set; }
         public Post Post { get; set; } // Navigation property to the commented post
-        [ForeignKey("UserId")]
-        public HatebookMainModel User { get; set; }
+        [ForeignKey(nameof(UserId))]
+        public DbIdentityExtention DbIdentityExtention { get; set; }
     }
 }

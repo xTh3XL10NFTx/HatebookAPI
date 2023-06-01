@@ -35,12 +35,12 @@ namespace Hatebook.Models
         public Gender GenderType { get; set; }
         public enum Gender
         {
-            [Display(Name = "Male")]
-            Male,
-            [Display(Name = "Female")]
-            Female,
-            [Display(Name = "Unknown")]
-            Unknown
+            [Display(Name = "Male", Description = "Male")]
+            MainModelGenderMale,
+            [Display(Name = "Female", Description = "Female")]
+            MainModelGenderFemale,
+            [Display(Name = "Unknown", Description = "Unknown")]
+            MainModelGenderUnknown
         }
 
         [DataType(DataType.ImageUrl)]

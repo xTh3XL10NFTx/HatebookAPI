@@ -1,4 +1,5 @@
-﻿using Hatebook.Filters;
+﻿using FluentValidation;
+using Hatebook.Filters;
 using Microsoft.AspNetCore.Authorization;
 
 namespace Hatebook.Controllers
@@ -8,7 +9,12 @@ namespace Hatebook.Controllers
     public class AccountController : DependencyInjection
     {
         private readonly AccountServices _accountServices;
-        public AccountController(IControllerConstructor dependency, AccountServices accountServices) : base(dependency) => _accountServices = accountServices;
+        private readonly IValidator<HatebookMainModel> _validator;
+        public AccountController(IControllerConstructor dependency, AccountServices accountServices, IValidator<HatebookMainModel> validator) : base(dependency)
+        {
+            _accountServices = accountServices;
+            _validator = validator;
+        }
 
         // Get api/Account/get
         [HttpGet("get")]
@@ -33,6 +39,7 @@ namespace Hatebook.Controllers
 
         // POST api/Account/Register
         [HttpPost("Register")]
+        [AllowAnonymous]
         [ValidateModel]
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -40,11 +47,19 @@ namespace Hatebook.Controllers
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> Register([FromBody] HatebookMainModel request)
         {
+            var validationResult = _validator.Validate(request);
+            if (!validationResult.IsValid)
+            {
+                // Model is invalid, handle validation errors
+                var errors = validationResult.Errors.Select(error => error.ErrorMessage);
+                // Return appropriate response, such as BadRequest(errors)
+            }
             return await _accountServices.RegisterUserService(request,ModelState);
         }
 
         // POST api/Account/Register/LogIn
         [HttpPost("LogIn")]
+        [AllowAnonymous]
         [ValidateModel]
         [ProducesResponseType(StatusCodes.Status202Accepted)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]

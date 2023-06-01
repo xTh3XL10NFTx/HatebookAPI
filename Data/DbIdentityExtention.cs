@@ -13,16 +13,16 @@ namespace Hatebook.Data
         [DisplayName("Birthday")]
         public DateTime Birthday { get; set; }
         public Gender GenderType { get; set; }
-
         public enum Gender
         {
-            [Display(Name = "Male")]
+            [Display(Name = "Male", Description = "Male")]
             Male,
-            [Display(Name = "Female")]
+            [Display(Name = "Female", Description = "Female")]
             Female,
-            [Display(Name = "Unknown")]
+            [Display(Name = "Unknown", Description = "Unknown")]
             Unknown
         }
+
         public string? ProfilePicture { get; set; }
     }
 }

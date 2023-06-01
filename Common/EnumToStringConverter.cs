@@ -22,7 +22,7 @@ namespace Hatebook.Common
             }
 
             // Gender is not specified or invalid, return unknown
-            return Gender.Unknown;
+            return Gender.MainModelGenderUnknown;
         }
 
         public override void Write(Utf8JsonWriter writer, Gender value, JsonSerializerOptions options)

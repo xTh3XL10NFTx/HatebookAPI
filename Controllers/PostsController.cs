@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Hosting;
+﻿using System.Text.Json.Serialization;
+using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
+using System.Text.RegularExpressions;
 
 namespace Hatebook.Controllers
 {
@@ -12,7 +12,8 @@ namespace Hatebook.Controllers
 
         public PostsController(IControllerConstructor dependency) : base(dependency) { }
 
-        [HttpPost]
+        [Authorize]
+        [HttpPost("createPost")]
         public IActionResult CreatePost(PostDto model)
         {
             // Validate the input
@@ -41,7 +42,45 @@ namespace Hatebook.Controllers
             return Ok(post);
         }
 
+        /* 
+        [Authorize]
+        [HttpPost("createPost/{groupName}")]
+        public async Task<IActionResult> CreatePostInGroupAsync(string groupName, PostDto model)
+        {
+            GroupsModel group = await GetModelByNameService(groupName);
+            // Validate the input
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
+            // Get the user information from the request
+            var userId = GetUserIdFromRequest();
+
+            if (group == null)
+            {
+                return NotFound("Group not found");
+            }
+
+            // Create a new post entity
+            Post post = new Post
+            {
+                Content = model.Content,
+                ImageUrl = model.ImageUrl,
+                Timestamp = DateTime.Now,
+                UserId = userId
+            };
+
+            // Save the new post to the database
+            _dependency.Context.Posts.Add(post);
+            _dependency.Context.SaveChanges();
+
+            // Return the created post entity
+            return Ok(post);
+        }
+        */
+
+        [Authorize]
         [HttpPost("{postId}/like")]
         public IActionResult LikePost(int postId)
         {
@@ -55,28 +94,33 @@ namespace Hatebook.Controllers
 
             // Get the user information from the request
             var userId = GetUserIdFromRequest();
+            // Create a new like entity and save it to the database
 
             // Check if the user has already liked the post
             var existingLike = _dependency.Context.Likes.FirstOrDefault(l => l.PostId == postId && l.UserId == userId);
 
-            if (existingLike != null)
-            {
-                return BadRequest("User has already liked this post.");
-            }
 
-            // Create a new like entity and save it to the database
+
+
             var like = new Like
             {
                 PostId = postId,
                 UserId = userId
             };
+            if (existingLike != null)
+            {        // Remove the existing like from the database
+                _dependency.Context.Likes.Remove(existingLike);
+                _dependency.Context.SaveChanges();
+                return BadRequest("Unliked");
+            }
 
             _dependency.Context.Likes.Add(like);
             _dependency.Context.SaveChanges();
 
-            return Ok();
+            return Ok("Liked");
         }
 
+        [Authorize]
         [HttpPost("{postId}/comment")]
         public IActionResult AddComment(int postId, CommentDto model)
         {
@@ -105,13 +149,43 @@ namespace Hatebook.Controllers
             return Ok();
         }
 
-        [HttpGet]
+        [Authorize]
+        [HttpGet("posts")]
         public IActionResult GetPosts()
         {
-            // Retrieve all posts from the database
-            var posts = _dependency.Context.Posts.ToList();
+            // Retrieve the posts from the database including the Likes navigation property
+            var posts = _dependency.Context.Posts.Include(p => p.Likes).Include(p => p.Comments).ToList();
 
-            return Ok(posts);
+            // Configure the JSON serializer options
+            var serializerOptions = new JsonSerializerOptions
+            {
+                ReferenceHandler = ReferenceHandler.Preserve,
+                WriteIndented = true
+            };
+
+            // Serialize the posts to JSON using the configured options
+            var json = JsonSerializer.Serialize(posts, serializerOptions);
+
+            // Return the JSON response
+            return Ok(json);
+        }
+
+        [Authorize]
+        [HttpGet("likes")]
+        public IActionResult GetLikes()
+        {
+            // Retrieve all posts from the database
+            var likes = _dependency.Context.Likes.ToList();
+
+            return Ok(likes);
+        }
+        [HttpGet("comments")]
+        public IActionResult GetComments()
+        {
+            // Retrieve all posts from the database
+            var comments = _dependency.Context.Comments.ToList();
+
+            return Ok(comments);
         }
 
         // Other controller methods for updating and deleting posts
@@ -121,9 +195,17 @@ namespace Hatebook.Controllers
         {
             string userEmail = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
 
-            //return _dependency.Context.Users.SingleOrDefault(u => u.Email == userEmail)?.Id;
-            return userEmail;
+            return _dependency.Context.Users.SingleOrDefault(u => u.Email == userEmail)?.Id;
             // Implement your logic to retrieve the user ID from the request
+        }
+
+
+
+        [HttpGet]
+        public async Task<GroupsModel> GetModelByNameService(string name)
+        {
+            var dbUser = await _dependency.Context.groups.FirstOrDefaultAsync(u => u.Name == name);
+            return dbUser;
         }
     }
 

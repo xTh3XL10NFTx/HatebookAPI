@@ -207,37 +207,6 @@ namespace Hatebook.Migrations
                     b.ToTable("groups");
                 });
 
-            modelBuilder.Entity("Hatebook.Models.HatebookMainModel", b =>
-                {
-                    b.Property<string>("Email")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("Birthday")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("GenderType")
-                        .HasColumnType("int");
-
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("Password")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("ProfilePicture")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Email");
-
-                    b.ToTable("HatebookMainModel");
-                });
-
             modelBuilder.Entity("Hatebook.Models.Like", b =>
                 {
                     b.Property<int>("Id")
@@ -292,26 +261,6 @@ namespace Hatebook.Migrations
                     b.ToTable("Posts");
                 });
 
-            modelBuilder.Entity("Hatebook.Models.Role", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("HatebookMainModelEmail")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("HatebookMainModelEmail");
-
-                    b.ToTable("Role");
-                });
-
             modelBuilder.Entity("Hatebook.Models.UsersInGroups", b =>
                 {
                     b.Property<Guid>("Id")
@@ -363,15 +312,15 @@ namespace Hatebook.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "c9bbea74-b8ab-4aee-9f73-95c4916a644c",
-                            ConcurrencyStamp = "30a985f4-8655-41c9-a7c1-6cb4171ec635",
+                            Id = "67e69f3f-5518-432f-834c-1c714757a6cb",
+                            ConcurrencyStamp = "5b3905f8-9c8e-424e-bf1b-1cc639766e0f",
                             Name = "User",
                             NormalizedName = "USER"
                         },
                         new
                         {
-                            Id = "03bded8e-6a41-4cfe-8902-2a36efd67774",
-                            ConcurrencyStamp = "087ec6eb-eca8-49bf-b00f-daabf9eefd91",
+                            Id = "26d68abe-7b78-41cd-b96b-13f65cd41194",
+                            ConcurrencyStamp = "b791d4c1-e44d-4715-ba4a-937e980a8219",
                             Name = "Administrator",
                             NormalizedName = "ADMINISTRATOR"
                         });
@@ -491,15 +440,15 @@ namespace Hatebook.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Hatebook.Models.HatebookMainModel", "User")
+                    b.HasOne("Hatebook.Data.DbIdentityExtention", "DbIdentityExtention")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Post");
+                    b.Navigation("DbIdentityExtention");
 
-                    b.Navigation("User");
+                    b.Navigation("Post");
                 });
 
             modelBuilder.Entity("Hatebook.Models.GroupAdmins", b =>
@@ -529,15 +478,15 @@ namespace Hatebook.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("Hatebook.Models.HatebookMainModel", "User")
+                    b.HasOne("Hatebook.Data.DbIdentityExtention", "DbIdentityExtention")
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Post");
+                    b.Navigation("DbIdentityExtention");
 
-                    b.Navigation("User");
+                    b.Navigation("Post");
                 });
 
             modelBuilder.Entity("Hatebook.Models.Post", b =>
@@ -549,13 +498,6 @@ namespace Hatebook.Migrations
                         .IsRequired();
 
                     b.Navigation("DbIdentityExtention");
-                });
-
-            modelBuilder.Entity("Hatebook.Models.Role", b =>
-                {
-                    b.HasOne("Hatebook.Models.HatebookMainModel", null)
-                        .WithMany("Roles")
-                        .HasForeignKey("HatebookMainModelEmail");
                 });
 
             modelBuilder.Entity("Hatebook.Models.UsersInGroups", b =>
@@ -626,11 +568,6 @@ namespace Hatebook.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("Hatebook.Models.HatebookMainModel", b =>
-                {
-                    b.Navigation("Roles");
                 });
 
             modelBuilder.Entity("Hatebook.Models.Post", b =>

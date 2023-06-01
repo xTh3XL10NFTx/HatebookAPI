@@ -88,23 +88,6 @@ namespace Hatebook.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "HatebookMainModel",
-                columns: table => new
-                {
-                    Email = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Birthday = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    GenderType = table.Column<int>(type: "int", nullable: false),
-                    ProfilePicture = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Password = table.Column<string>(type: "nvarchar(max)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_HatebookMainModel", x => x.Email);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
@@ -283,24 +266,6 @@ namespace Hatebook.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Role",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    HatebookMainModelEmail = table.Column<string>(type: "nvarchar(450)", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Role", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Role_HatebookMainModel_HatebookMainModelEmail",
-                        column: x => x.HatebookMainModelEmail,
-                        principalTable: "HatebookMainModel",
-                        principalColumn: "Email");
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Comments",
                 columns: table => new
                 {
@@ -314,10 +279,10 @@ namespace Hatebook.Migrations
                 {
                     table.PrimaryKey("PK_Comments", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Comments_HatebookMainModel_UserId",
+                        name: "FK_Comments_AspNetUsers_UserId",
                         column: x => x.UserId,
-                        principalTable: "HatebookMainModel",
-                        principalColumn: "Email",
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Comments_Posts_PostId",
@@ -340,10 +305,10 @@ namespace Hatebook.Migrations
                 {
                     table.PrimaryKey("PK_Likes", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Likes_HatebookMainModel_UserId",
+                        name: "FK_Likes_AspNetUsers_UserId",
                         column: x => x.UserId,
-                        principalTable: "HatebookMainModel",
-                        principalColumn: "Email",
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Likes_Posts_PostId",
@@ -358,8 +323,8 @@ namespace Hatebook.Migrations
                 columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
                 values: new object[,]
                 {
-                    { "03bded8e-6a41-4cfe-8902-2a36efd67774", "087ec6eb-eca8-49bf-b00f-daabf9eefd91", "Administrator", "ADMINISTRATOR" },
-                    { "c9bbea74-b8ab-4aee-9f73-95c4916a644c", "30a985f4-8655-41c9-a7c1-6cb4171ec635", "User", "USER" }
+                    { "26d68abe-7b78-41cd-b96b-13f65cd41194", "b791d4c1-e44d-4715-ba4a-937e980a8219", "Administrator", "ADMINISTRATOR" },
+                    { "67e69f3f-5518-432f-834c-1c714757a6cb", "5b3905f8-9c8e-424e-bf1b-1cc639766e0f", "User", "USER" }
                 });
 
             migrationBuilder.CreateIndex(
@@ -445,11 +410,6 @@ namespace Hatebook.Migrations
                 name: "IX_Posts_UserId",
                 table: "Posts",
                 column: "UserId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Role_HatebookMainModelEmail",
-                table: "Role",
-                column: "HatebookMainModelEmail");
         }
 
         /// <inheritdoc />
@@ -486,9 +446,6 @@ namespace Hatebook.Migrations
                 name: "manyToMany");
 
             migrationBuilder.DropTable(
-                name: "Role");
-
-            migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
@@ -496,9 +453,6 @@ namespace Hatebook.Migrations
 
             migrationBuilder.DropTable(
                 name: "groups");
-
-            migrationBuilder.DropTable(
-                name: "HatebookMainModel");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
