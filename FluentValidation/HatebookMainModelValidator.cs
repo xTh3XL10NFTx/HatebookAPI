@@ -20,23 +20,23 @@ namespace Hatebook.Models.Validators
             RuleFor(model => model.Birthday)
                 .NotEmpty().WithMessage("Birthday is required.");
 
-            //RuleFor(model => model.Roles)
-            //    .Must(BeValidRole).WithMessage("Invalid role specified. Allowed roles are 'user' and 'administrator'.");
+            RuleFor(model => model.Roles)
+                .Must(BeValidRole).WithMessage("Invalid role specified. Allowed roles are 'user' and 'administrator'.");
 
 
             // Add more validation rules as needed
         }
-        //private bool BeValidRole(ICollection<Role> roles)
-        //{
-        //    foreach (var role in roles)
-        //    {
-        //        if (role.Name.ToLower() != "user" && role.Name.ToLower() != "administrator")
-        //        {
-        //            return false;
-        //        }
-        //    }
+        private bool BeValidRole(ICollection<Role> roles)
+        {
+            foreach (var role in roles)
+            {
+                if (role.Name.ToLower() != "user" && role.Name.ToLower() != "administrator")
+                {
+                    return false;
+                }
+            }
 
-        //    return true;
-        //}
+            return true;
+        }
     }
 }
