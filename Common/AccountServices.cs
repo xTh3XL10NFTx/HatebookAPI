@@ -62,7 +62,7 @@ namespace Hatebook.Common
         }
         public async Task<IActionResult> DeleteUserService(string email)
         {
-            GroupsModel user = await GetModelByNameService(email);
+            GroupsModel? user = await GetModelByNameService(email);
             if (user == null) return new BadRequestObjectResult("User not found.");
 
             _dependency.Context.Remove(user);
@@ -72,12 +72,12 @@ namespace Hatebook.Common
         }
         public async Task<IActionResult> GetUser(string email)
         {
-            GroupsModel user = await GetModelByNameService(email);
+            GroupsModel? user = await GetModelByNameService(email);
             if (user == null) return new BadRequestObjectResult("User not found.");
 
             return new OkObjectResult(user);
         }
-        public async Task<GroupsModel> GetModelByNameService(string name)
+        public async Task<GroupsModel?> GetModelByNameService(string name)
         {
             var dbUser = await _dependency.Context.groups.FirstOrDefaultAsync(u => u.Name == name);
             return dbUser;

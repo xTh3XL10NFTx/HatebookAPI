@@ -8,7 +8,9 @@ namespace Hatebook.Hubs
         private readonly IControllerConstructor _dependency;
         public ChatHub(IControllerConstructor dependency) => _dependency = dependency;
 
-        public string userName = null;
+        public string userName = "" ;
+
+
         public async Task JoinGroupChat(string groupNameVar, string iuserName)
         {
             Guid? groupId = _dependency.Context.groups.SingleOrDefault(u => u.Name == groupNameVar)?.Id;
@@ -17,11 +19,24 @@ namespace Hatebook.Hubs
             if (groupId==null)
             {
                 // Group does not exist
+                new BadRequestObjectResult("Error");
+                return;
+            }
+
+            if (userName == null)
+            {
+                
+                new BadRequestObjectResult("Error");
                 return;
             }
 
             userName = iuserName;
-            string groupName = groupId.ToString();
+            string? groupName = groupId.ToString();
+            if (groupName == null)
+            {
+                new BadRequestObjectResult("Error");
+                return;
+            }
 
             // Add the connection to the group
             await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
@@ -35,11 +50,12 @@ namespace Hatebook.Hubs
 
         public async Task JoinFriendChat(string friendNameVar, string iuserName)
         {
-            string friendId = _dependency.Context.Users.SingleOrDefault(u => u.Email == friendNameVar)?.Id;
-            string userNameId = _dependency.Context.Users.SingleOrDefault(u => u.Email == iuserName)?.Id;
+            string? friendId = _dependency.Context.Users.SingleOrDefault(u => u.Email == friendNameVar)?.Id;
+            string? userNameId = _dependency.Context.Users.SingleOrDefault(u => u.Email == iuserName)?.Id;
             if (friendId == null)
             {
                 // Group does not exist
+                new BadRequestObjectResult("Error");
                 return;
             }
             // Implement your logic to check if the user is friends with the given friendId
@@ -50,6 +66,7 @@ namespace Hatebook.Hubs
             if (!areFriends)
             {
                 // Users are not friends
+                new BadRequestObjectResult("Error");
                 return;
             }
 
@@ -89,8 +106,19 @@ namespace Hatebook.Hubs
 
         public async Task SendMessageToFriend(string message, string friendName)
         {
-            string userNameId = _dependency.Context.Users.SingleOrDefault(u => u.Email == userName)?.Id;
-            string friendId = _dependency.Context.Users.SingleOrDefault(u => u.Email == friendName)?.Id;
+            string? userNameId = _dependency.Context.Users.SingleOrDefault(u => u.Email == userName)?.Id;
+            string? friendId = _dependency.Context.Users.SingleOrDefault(u => u.Email == friendName)?.Id;
+
+            if (userNameId == null)
+            {
+                new BadRequestObjectResult("Error");
+                return;
+            }
+            if (friendId == null)
+            {
+                new BadRequestObjectResult("Error");
+                return;
+            }
 
             // Check if the sender and receiver are friends
             bool areFriends = _dependency.Context.Friends.Any(f =>
@@ -100,6 +128,7 @@ namespace Hatebook.Hubs
             if (!areFriends)
             {
                 // Sender and receiver are not authorized to send messages to each other
+                new BadRequestObjectResult("Error");
                 return;
             }
 
@@ -125,7 +154,7 @@ namespace Hatebook.Hubs
             await base.OnConnectedAsync();
         }
 
-        public override async Task OnDisconnectedAsync(Exception exception)
+        public override async Task OnDisconnectedAsync(Exception? exception)
         {
             await RemoveFromAllGroups(Context.ConnectionId);
 

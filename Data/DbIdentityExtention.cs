@@ -7,9 +7,9 @@ namespace Hatebook.Data
     {
         [Required]
         [DisplayName("First name")]
-        public string FirstName { get; set; }
+        public string? FirstName { get; set; }
         [DisplayName("Last name")]
-        public string LastName { get; set; }
+        public string? LastName { get; set; }
         [DisplayName("Birthday")]
         public DateTime Birthday { get; set; }
         public Gender GenderType { get; set; }

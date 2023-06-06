@@ -20,6 +20,11 @@ namespace Hatebook.Filters
             }
 
             var userId = context.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            if (userId==null)
+            {
+                context.Result = new BadRequestObjectResult("Error");
+                return;
+            }
 
             if (!IsUserGroupAdmin(userId, groupId, context))
             {
@@ -30,6 +35,12 @@ namespace Hatebook.Filters
         private bool IsUserGroupAdmin(string userId, Guid groupId, ActionExecutedContext context)
         {
             var _dependency = context.HttpContext.RequestServices.GetService<IControllerConstructor>();
+            if (_dependency == null)
+            {
+                context.Result = new BadRequestObjectResult("Error");
+                return false;
+
+            }
 
             var isAdmin = _dependency.Context.GroupAdmins.Any(ga => ga.UserId == userId && ga.GroupId == groupId);
 
@@ -41,7 +52,11 @@ namespace Hatebook.Filters
         public Guid GetGroupNameById(string groupName, ActionExecutedContext context)
         {
             var _dependency = context.HttpContext.RequestServices.GetService<IControllerConstructor>();
+            if (_dependency == null)
+            {
+                return Guid.Empty;
 
+            }
             var groupId = _dependency.Context.groups.FirstOrDefault(g => g.Name == groupName);
             if (groupId != null)
             {

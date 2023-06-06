@@ -41,7 +41,7 @@
 
         public async Task<ActionResult> GetGroupByNameService(string Name)
         {
-            GroupsModel user = await GetModelByNameService(Name);
+            GroupsModel? user = await GetModelByNameService(Name);
             if (user == null) return new BadRequestObjectResult("Group not found");
 
             return new OkObjectResult(user);
@@ -49,7 +49,7 @@
 
         public async Task<ActionResult> DeleteGroupService(string Name)
         {
-            GroupsModel user = await GetModelByNameService(Name);
+            GroupsModel? user = await GetModelByNameService(Name);
             if (user == null) return new BadRequestObjectResult("Group not found");
 
             _dependency.Context.groups.Remove(user);
@@ -59,7 +59,7 @@
         }
         public async Task<IActionResult> EditGroupService(GroupsModel request, string name)
         {
-            GroupsModel user = await GetModelByNameService(name);
+            GroupsModel? user = await GetModelByNameService(name);
             if (user == null) return new BadRequestObjectResult("User not found!");
 
             user.Name = request.Name;
@@ -71,7 +71,7 @@
             return new OkObjectResult(user);
         }
 
-        public async Task<GroupsModel> GetModelByNameService(string name)
+        public async Task<GroupsModel?> GetModelByNameService(string name)
         {
             var dbUser = await _dependency.Context.groups.FirstOrDefaultAsync(u => u.Name == name);
             return dbUser;

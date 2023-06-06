@@ -82,5 +82,24 @@ namespace Hatebook.Repository
             _db.Attach(entity); 
             _context.Entry(entity).State = EntityState.Modified;
         }
+
+
+        //
+        //
+        //
+        Task<T> IGenericRepository<T>.Delete(int id)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<T> IGenericRepository<T>.Insert(T entity)
+        {
+            throw new NotImplementedException();
+        }
+
+        Task<T> IGenericRepository<T>.InsertRange(IEnumerable<T> entities)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

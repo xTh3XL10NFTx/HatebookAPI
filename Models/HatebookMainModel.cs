@@ -11,21 +11,21 @@ namespace Hatebook.Models
         [Required]
         [DisplayName("E-mail")]
         [DataType(DataType.EmailAddress)]
-        public string Email { get; set; }
+        public string? Email { get; set; }
         [Required]
         [DataType(DataType.Password)]
         //[MinLength(6, ErrorMessage = "The password must be of minimum 6 characters!")]
-        public string Password { get; set; }
+        public string? Password { get; set; }
     }
 
     public class HatebookMainModel : HatebookLogin
     {
         [Required]
         [DisplayName("First name")]
-        public string FirstName { get; set; }
+        public string? FirstName { get; set; }
 
         [DisplayName("Last name")]
-        public string LastName { get; set; }
+        public string? LastName { get; set; }
 
         [DisplayName("Birthday")]
         [DataType(DataType.Date)]
@@ -55,6 +55,6 @@ namespace Hatebook.Models
     public class Role
     {
         public Guid Id { get; set; }
-        public string Name { get; set; }
+        public string? Name { get; set; }
     }
 }
