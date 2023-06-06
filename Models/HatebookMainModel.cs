@@ -11,11 +11,11 @@ namespace Hatebook.Models
         [Required]
         [DisplayName("E-mail")]
         [DataType(DataType.EmailAddress)]
-        public string Email { get; set; }
+        public string? Email { get; set; }
         [Required]
         [DataType(DataType.Password)]
         //[MinLength(6, ErrorMessage = "The password must be of minimum 6 characters!")]
-        public string Password { get; set; }
+        public string? Password { get; set; }
     }
 
     public class HatebookMainModel : HatebookLogin
@@ -54,6 +54,6 @@ namespace Hatebook.Models
     }
     public class Role
     {
-        public string Name { get; set; }
+        public string? Name { get; set; }
     }
 }

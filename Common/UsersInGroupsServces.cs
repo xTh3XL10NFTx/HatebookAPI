@@ -1,18 +1,20 @@
 ﻿namespace Hatebook.Common
 {
-    public class UsersInGroupsServces: DependencyInjection
+    public class UsersInGroupsServces : DependencyInjection
     {
         public UsersInGroupsServces(IControllerConstructor dependency) : base(dependency) { }
+
         public async Task<IActionResult> MoveUserToGroupService(string email, string groupName)
         {
+            var user = await _dependency.UnitOfWork.Identity.Get(u => u.Email == email);
 
-            var user = await _dependency.Context.dbIdentityExtentions.FirstOrDefaultAsync(u => u.Email == email);
             if (user == null)
             {
                 return new BadRequestObjectResult("User not found");
             }
 
-            var group = await _dependency.Context.groups.FirstOrDefaultAsync(g => g.Name == groupName);
+            var group = await _dependency.UnitOfWork.Groups.Get(g => g.Name == groupName);
+
             if (group == null)
             {
                 return new BadRequestObjectResult("Group not found");
@@ -20,71 +22,84 @@
 
             var userInGroup = new UsersInGroups
             {
-                UserId              = user.Email,
+                UserId = user.Email,
                 DbIdentityExtention = user,
-                GroupId             = group.Id,
-                GroupsModel         = group
+                GroupId = group.Id,
+                GroupsModel = group
             };
 
-            _dependency.Context.usersInGroups.Add(userInGroup);
-            await _dependency.Context.SaveChangesAsync();
+            await _dependency.UnitOfWork.UsersInGroups.Insert(userInGroup);
+            await _dependency.UnitOfWork.Save();
 
             return new OkObjectResult("User added to group.");
         }
-        
+
         public async Task<IActionResult> MoveUserToAdminService(string email, string groupName)
         {
-            var user = await _dependency.Context.dbIdentityExtentions.FirstOrDefaultAsync(u => u.Email == email);
-            if (user == null) return new BadRequestObjectResult("User not found");
+            var user = await _dependency.UnitOfWork.Identity.Get(u => u.Email == email);
 
-            var group = await _dependency.Context.groups.FirstOrDefaultAsync(g => g.Name == groupName);
-            if (group == null) return new BadRequestObjectResult("Group not found");
-
-            var groupAdmins = new GroupAdmins
-            {
-                UserId              = user.Email,
-                DbIdentityExtention = user,
-                GroupId             = group.Id,
-                GroupsModel         = group
-            };
-
-            _dependency.Context.groupAdmins.Add(groupAdmins);
-            await _dependency.Context.SaveChangesAsync();
-
-            return new OkObjectResult("User changed to admin.");
-        }
-        public async Task<IActionResult> RemoveUserFromGroupService(string email, string groupName)
-        {
-            var user = await _dependency.Context.dbIdentityExtentions.FirstOrDefaultAsync(u => u.Email == email);
             if (user == null)
             {
                 return new BadRequestObjectResult("User not found");
             }
 
-            var group = await _dependency.Context.groups.FirstOrDefaultAsync(g => g.Name == groupName);
+            var group = await _dependency.UnitOfWork.Groups.Get(g => g.Name == groupName);
+
             if (group == null)
             {
                 return new BadRequestObjectResult("Group not found");
             }
 
-            var userInGroup = await _dependency.Context.usersInGroups.FirstOrDefaultAsync(u => u.UserId == user.Id && u.GroupsModel.Id == group.Id);
+            var groupAdmins = new GroupAdmins
+            {
+                UserId = user.Email,
+                DbIdentityExtention = user,
+                GroupId = group.Id,
+                GroupsModel = group
+            };
+
+            await _dependency.UnitOfWork.Admins.Insert(groupAdmins);
+            await _dependency.UnitOfWork.Save();
+
+            return new OkObjectResult("User changed to admin.");
+        }
+
+        public async Task<IActionResult> RemoveUserFromGroupService(string email, string groupName)
+        {
+            var user = await _dependency.UnitOfWork.Identity.Get(u => u.Email == email);
+
+            if (user == null)
+            {
+                return new BadRequestObjectResult("User not found");
+            }
+
+            var group = await _dependency.UnitOfWork.Groups.Get(g => g.Name == groupName);
+
+            if (group == null)
+            {
+                return new BadRequestObjectResult("Group not found");
+            }
+
+            var userInGroup = await _dependency.UnitOfWork.UsersInGroups.Get(u => u.UserId == user.Id && u.GroupsModel.Id == group.Id);
+
             if (userInGroup == null)
             {
                 return new BadRequestObjectResult("User is not a member of the group");
             }
 
-            _dependency.Context.usersInGroups.Remove(userInGroup);
-            await _dependency.Context.SaveChangesAsync();
+            await _dependency.UnitOfWork.UsersInGroups.Delete(userInGroup.Id);
+            await _dependency.UnitOfWork.Save();
+
             return new OkObjectResult("User " + email + " deleted from group " + groupName + " successfully!");
         }
+
         public async Task<ActionResult<List<GroupsModel>>> GetService()
         {
-            var usersInGroups = await _dependency.Context.usersInGroups
-                .Include(u => u.DbIdentityExtention)
-                .Include(u => u.GroupsModel)
-                .ToListAsync();
+            var usersInGroups = await _dependency.UnitOfWork.UsersInGroups.GetAll(
+                includes: new List<string> { "DbIdentityExtention", "GroupsModel" });
 
             var result = usersInGroups.Select(u => $"{u.DbIdentityExtention?.Email}, {u.GroupsModel?.Name}").ToList();
+
             return new OkObjectResult(result);
         }
     }
