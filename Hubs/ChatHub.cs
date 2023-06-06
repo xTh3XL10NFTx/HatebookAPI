@@ -43,7 +43,7 @@ namespace Hatebook.Hubs
                 return;
             }
             // Implement your logic to check if the user is friends with the given friendId
-            bool areFriends = _dependency.Context.Friends.Any(f =>
+            bool areFriends = _dependency.Context.friends.Any(f =>
                 (f.UserId1 == userNameId && f.UserId2 == friendId) ||
                 (f.UserId1 == friendId && f.UserId2 == userNameId));
 
@@ -76,7 +76,7 @@ namespace Hatebook.Hubs
         public async Task SendMessageToGroup(string message, Guid groupId)
         {
             // Check if the user is part of the group
-            bool isMember = _dependency.Context.manyToMany.Any(ug => ug.UserId == userName && ug.GroupId == groupId);
+            bool isMember = _dependency.Context.usersInGroups.Any(ug => ug.UserId == userName && ug.GroupId == groupId);
             if (!isMember)
             {
                 // User is not authorized to send messages in this group
@@ -93,7 +93,7 @@ namespace Hatebook.Hubs
             string friendId = _dependency.Context.Users.SingleOrDefault(u => u.Email == friendName)?.Id;
 
             // Check if the sender and receiver are friends
-            bool areFriends = _dependency.Context.Friends.Any(f =>
+            bool areFriends = _dependency.Context.friends.Any(f =>
                 (f.UserId1 == userNameId && f.UserId2 == friendId) ||
                 (f.UserId1 == friendId && f.UserId2 == userNameId));
 
@@ -112,7 +112,7 @@ namespace Hatebook.Hubs
         public override async Task OnConnectedAsync()
         {
             // Get the groups the user belongs to
-            var groupIds = _dependency.Context.manyToMany
+            var groupIds = _dependency.Context.usersInGroups
                 .Where(ug => ug.UserId == userName)
                 .Select(ug => ug.GroupId)
                 .ToList();
@@ -142,7 +142,7 @@ namespace Hatebook.Hubs
         }
         private async Task<List<string>> GetGroupsForConnection(string connectionId)
         {
-            return _dependency.Context.manyToMany
+            return _dependency.Context.usersInGroups
                 .Where(ug => ug.DbIdentityExtention.Id == connectionId)
                 .Select(ug => ug.GroupsModel.Id.ToString())
                 .ToList();

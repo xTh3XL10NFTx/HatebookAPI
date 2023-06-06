@@ -31,7 +31,7 @@ namespace Hatebook.Filters
         {
             var _dependency = context.HttpContext.RequestServices.GetService<IControllerConstructor>();
 
-            var isAdmin = _dependency.Context.GroupAdmins.Any(ga => ga.UserId == userId && ga.GroupId == groupId);
+            var isAdmin = _dependency.Context.groupAdmins.Any(ga => ga.UserId == userId && ga.GroupId == groupId);
 
             return isAdmin;
         }

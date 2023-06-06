@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Hatebook.Controllers;
+using Hatebook.IRepository;
 
 namespace Hatebook.Common
 {
@@ -11,7 +12,8 @@ namespace Hatebook.Common
             IMapper mapper,
             IConfiguration configuration,
             ApplicationDbContext context,
-            IAuthManager authManager)
+            IAuthManager authManager,
+            IUnitOfWork unitOfWork)
         {
             UserManager   = userManager;
             Logger        = logger;
@@ -19,6 +21,7 @@ namespace Hatebook.Common
             Configuration = configuration;
             Context       = context;
             AuthManager   = authManager;
+            UnitOfWork    = unitOfWork;
         }
 
         public UserManager<DbIdentityExtention> UserManager { get; }
@@ -27,5 +30,6 @@ namespace Hatebook.Common
         public IConfiguration Configuration { get; }
         public ApplicationDbContext Context { get; }
         public IAuthManager AuthManager { get; }
+        public IUnitOfWork UnitOfWork { get; }
     }
 }

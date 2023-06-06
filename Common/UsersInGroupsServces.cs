@@ -26,7 +26,7 @@
                 GroupsModel         = group
             };
 
-            _dependency.Context.manyToMany.Add(userInGroup);
+            _dependency.Context.usersInGroups.Add(userInGroup);
             await _dependency.Context.SaveChangesAsync();
 
             return new OkObjectResult("User added to group.");
@@ -48,7 +48,7 @@
                 GroupsModel         = group
             };
 
-            _dependency.Context.GroupAdmins.Add(groupAdmins);
+            _dependency.Context.groupAdmins.Add(groupAdmins);
             await _dependency.Context.SaveChangesAsync();
 
             return new OkObjectResult("User changed to admin.");
@@ -67,19 +67,19 @@
                 return new BadRequestObjectResult("Group not found");
             }
 
-            var userInGroup = await _dependency.Context.manyToMany.FirstOrDefaultAsync(u => u.UserId == user.Id && u.GroupsModel.Id == group.Id);
+            var userInGroup = await _dependency.Context.usersInGroups.FirstOrDefaultAsync(u => u.UserId == user.Id && u.GroupsModel.Id == group.Id);
             if (userInGroup == null)
             {
                 return new BadRequestObjectResult("User is not a member of the group");
             }
 
-            _dependency.Context.manyToMany.Remove(userInGroup);
+            _dependency.Context.usersInGroups.Remove(userInGroup);
             await _dependency.Context.SaveChangesAsync();
             return new OkObjectResult("User " + email + " deleted from group " + groupName + " successfully!");
         }
         public async Task<ActionResult<List<GroupsModel>>> GetService()
         {
-            var usersInGroups = await _dependency.Context.manyToMany
+            var usersInGroups = await _dependency.Context.usersInGroups
                 .Include(u => u.DbIdentityExtention)
                 .Include(u => u.GroupsModel)
                 .ToListAsync();

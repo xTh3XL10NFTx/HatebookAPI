@@ -46,18 +46,18 @@ namespace Hatebook.Controllers
                 else {
 
 
-                if (_dependency.Context.Friends.SingleOrDefault(f => (f.UserId1 == friend.UserId1 || f.UserId2 == friend.UserId1) && f.Status == "Accepted" && (f.UserId1 == friend.UserId2 || f.UserId2 == friend.UserId2)) == null)
+                if (_dependency.Context.friends.SingleOrDefault(f => (f.UserId1 == friend.UserId1 || f.UserId2 == friend.UserId1) && f.Status == "Accepted" && (f.UserId1 == friend.UserId2 || f.UserId2 == friend.UserId2)) == null)
                 {
-                    if (_dependency.Context.Friends.SingleOrDefault(f => (f.UserId1 == friend.UserId1) && f.Status == "Pending" && (f.UserId2 == friend.UserId2)) == null)
+                    if (_dependency.Context.friends.SingleOrDefault(f => (f.UserId1 == friend.UserId1) && f.Status == "Pending" && (f.UserId2 == friend.UserId2)) == null)
                     {
-                        if (_dependency.Context.Friends.SingleOrDefault(f => ((f.UserId1 == friend.UserId1 && f.UserId2 == friend.UserId2) || (f.UserId1 == friend.UserId2 && f.UserId2 == friend.UserId1)) && f.Status == "Pending") == null)
+                        if (_dependency.Context.friends.SingleOrDefault(f => ((f.UserId1 == friend.UserId1 && f.UserId2 == friend.UserId2) || (f.UserId1 == friend.UserId2 && f.UserId2 == friend.UserId1)) && f.Status == "Pending") == null)
                         {
-                            _dependency.Context.Friends.Add(friend);
+                            _dependency.Context.friends.Add(friend);
                             await _dependency.Context.SaveChangesAsync();
                             return Ok(friend);
                         }
                         else {
-                            var theFriend = _dependency.Context.Friends.SingleOrDefault(f => ((f.UserId1 == friend.UserId1 && f.UserId2 == friend.UserId2) || (f.UserId1 == friend.UserId2 && f.UserId2 == friend.UserId1)) && f.Status == "Pending");
+                            var theFriend = _dependency.Context.friends.SingleOrDefault(f => ((f.UserId1 == friend.UserId1 && f.UserId2 == friend.UserId2) || (f.UserId1 == friend.UserId2 && f.UserId2 == friend.UserId1)) && f.Status == "Pending");
                             theFriend.Status = "Accepted";
                             await _dependency.Context.SaveChangesAsync();
 
@@ -99,7 +99,7 @@ namespace Hatebook.Controllers
                 return BadRequest("You do not have a friend request from yourself.");
             }
 
-            var friend = await _dependency.Context.Friends
+            var friend = await _dependency.Context.friends
                 .FirstOrDefaultAsync(f => f.Status == "Pending" && f.UserId2 == userEmail);
 
             if (friend == null)
@@ -129,7 +129,7 @@ namespace Hatebook.Controllers
                 return BadRequest("You do not have a friend request from yourself.");
             }
 
-            var friend = await _dependency.Context.Friends
+            var friend = await _dependency.Context.friends
                 .FirstOrDefaultAsync(f => (f.UserId1 == loggedEmail || f.UserId2 == loggedEmail) && f.Status == "Pending" && (f.UserId1 == userEmail || f.UserId2 == userEmail));
 
             if (friend == null)
@@ -139,7 +139,7 @@ namespace Hatebook.Controllers
 
             friend.Status = "Declined";
 
-            _dependency.Context.Friends.Remove(friend);
+            _dependency.Context.friends.Remove(friend);
             await _dependency.Context.SaveChangesAsync();
 
             return Ok("Request declined.");
@@ -153,7 +153,7 @@ namespace Hatebook.Controllers
 
             loggedEmail = _dependency.Context.Users.SingleOrDefault(u => u.Email == loggedEmail)?.Id;
 
-            var friendRequests = _dependency.Context.Friends
+            var friendRequests = _dependency.Context.friends
     .Where(f => (f.UserId1 == loggedEmail || f.UserId2 == loggedEmail) && f.Status == "Accepted")
     .Select(f => new
     {
@@ -173,7 +173,7 @@ namespace Hatebook.Controllers
 
             loggedEmail = _dependency.Context.Users.SingleOrDefault(u => u.Email == loggedEmail)?.Id;
 
-            var friendRequests = _dependency.Context.Friends
+            var friendRequests = _dependency.Context.friends
                 .Where(f => (f.UserId2 == loggedEmail) && f.Status == "Pending")
                 .Select(f => new
                 {
@@ -205,12 +205,12 @@ namespace Hatebook.Controllers
 
             string inputEmailId = _dependency.Context.Users.SingleOrDefault(u => u.Email == inputEmail)?.Id;
 
-            FriendsList friends = _dependency.Context.Friends.SingleOrDefault(f => (f.UserId1 == loggedEmail || f.UserId2 == loggedEmail) && f.Status == "Accepted" && (f.UserId1 == inputEmailId || f.UserId2 == inputEmailId));
+            FriendsList friends = _dependency.Context.friends.SingleOrDefault(f => (f.UserId1 == loggedEmail || f.UserId2 == loggedEmail) && f.Status == "Accepted" && (f.UserId1 == inputEmailId || f.UserId2 == inputEmailId));
 
             // Check if the users exist and save the friend to the database
             if (friends != null)
             {
-                _dependency.Context.Friends.Remove(friends);
+                _dependency.Context.friends.Remove(friends);
                 await _dependency.Context.SaveChangesAsync();
                 return Ok(inputEmail + " removed from friends.");
             }

@@ -1,6 +1,7 @@
 ﻿using Hatebook.Models;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using System.Data;
+using System.Net;
 
 namespace Hatebook.Common
 {
@@ -13,15 +14,19 @@ namespace Hatebook.Common
             _dependency.Logger.LogInformation($"Login Attempt for {request.Email} ");
             try
             {
-                if (!await _dependency.AuthManager.ValidateUser(request))
+                var userRepository = _dependency.UnitOfWork.Identity;
+
+                var user = await userRepository.Get(u => u.Email == request.Email);
+                if (user == null || !await _dependency.AuthManager.ValidateUser(request))
                 {
                     return new UnauthorizedObjectResult("Wrong email or password");
                 }
+                await _dependency.UnitOfWork.Save();
+
                 return new AcceptedResult("User logged in", new { Token = await _dependency.AuthManager.CreateToken() });
             }
             catch (Exception ex)
             {
-
                 if (!await _dependency.AuthManager.ValidateUser(request))
                 {
                     _dependency.Logger.LogError(ex, $"Something Went Wrong in the {nameof(LogIntoUserService)}");
@@ -33,43 +38,58 @@ namespace Hatebook.Common
         public async Task<IActionResult> RegisterUserService(HatebookMainModel request, ModelStateDictionary state)
         {
             _dependency.Logger.LogInformation($"Registration Attempt for {request.Email}");
+
             var user = _dependency.Mapper.Map<DbIdentityExtention>(request);
 
             foreach (var roleName in request.Roles)
             {
-                var role = new Role
+                if (roleName.Name != "Administrator")
                 {
-                    Id = Guid.NewGuid(),
-                    Name = roleName.Name
-                };
+                    roleName.Name = "User";
+                }
 
                 await _dependency.UserManager.AddToRoleAsync(user, roleName.Name);
             }
-            user.UserName = request.Email;
-            var result = await _dependency.UserManager.CreateAsync(user, request.Password);
 
-            if (!result.Succeeded)
+            user.UserName = request.Email;
+
+            var userRepository = _dependency.UnitOfWork.Identity;
+            await userRepository.Insert(user);
+
+            try
             {
-                foreach (var error in result.Errors)
-                {
-                    state.AddModelError(error.Code, error.Description);
-                }
-                return new BadRequestObjectResult(state);
+                await _dependency.UnitOfWork.Save();
             }
-            // Assign the "User" role to the user by default
-            await _dependency.UserManager.AddToRoleAsync(user, "User");
+            catch (Exception ex)
+            {
+                _dependency.Logger.LogError(ex, $"Error occurred while registering user: {request.Email}");
+                return new ObjectResult($"An error occurred while registering the user: {request.Email}") { StatusCode = (int)HttpStatusCode.InternalServerError };
+            }
+
             return new AcceptedResult("", "User registered successfully!");
         }
+
         public async Task<IActionResult> DeleteUserService(string email)
         {
             GroupsModel user = await GetModelByNameService(email);
             if (user == null) return new BadRequestObjectResult("User not found.");
 
-            _dependency.Context.Remove(user);
-            await _dependency.Context.SaveChangesAsync();
+            var userRepository = _dependency.UnitOfWork.Identity;
+            await userRepository.Delete(user.Id);
 
-            return new OkObjectResult("User " + email + " deleted successfully!");
+            try
+            {
+                await _dependency.UnitOfWork.Save();
+            }
+            catch (Exception ex)
+            {
+                _dependency.Logger.LogError(ex, $"Error occurred while deleting user: {email}");
+                return new ObjectResult($"An error occurred while deleting the user: {email}") { StatusCode = (int)HttpStatusCode.InternalServerError };
+            }
+
+            return new OkObjectResult($"User {email} deleted successfully!");
         }
+
         public async Task<IActionResult> GetUser(string email)
         {
             GroupsModel user = await GetModelByNameService(email);

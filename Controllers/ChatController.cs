@@ -38,7 +38,7 @@ namespace Hatebook.Controllers
             }
 
 
-            if (!_dependency.Context.manyToMany
+            if (!_dependency.Context.usersInGroups
         .Any(ug => ug.UserId == userId && ug.GroupId == groupId))
             {
                 return BadRequest("User is not in this group. You need to enter the group first.");
@@ -63,7 +63,7 @@ namespace Hatebook.Controllers
             }
 
             // Check if the sender and receiver are friends
-            bool areFriends = _dependency.Context.Friends.Any(f =>
+            bool areFriends = _dependency.Context.friends.Any(f =>
                 (f.UserId1 == userId && f.UserId2 == friendId) ||
                 (f.UserId1 == friendId && f.UserId2 == userId));
 

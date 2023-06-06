@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Hatebook.Controllers;
+using Hatebook.IRepository;
 
 namespace Hatebook.Common
 {
@@ -11,5 +12,6 @@ namespace Hatebook.Common
         IConfiguration Configuration                 { get; }
         ApplicationDbContext Context                 { get; }
         IAuthManager AuthManager                     { get; }
+        IUnitOfWork UnitOfWork                      { get; }
     }
 }

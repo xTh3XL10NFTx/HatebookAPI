@@ -14,6 +14,8 @@ using FluentValidation;
 using Hatebook.Models.Validators;
 using FluentValidation.AspNetCore;
 using System.Reflection;
+using Hatebook.IRepository;
+using Hatebook.Repository;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;
@@ -40,6 +42,7 @@ builder.Services.AddScoped<AccountServices>();
 builder.Services.AddScoped<GroupServices>();
 builder.Services.AddScoped<UsersInGroupsServces>();
 builder.Services.AddScoped<FriendsListServces>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.ConfigureIdentity();
 builder.Services.AddSignalR();
 

@@ -35,7 +35,7 @@ namespace Hatebook.Controllers
             };
 
             // Save the new post to the database
-            _dependency.Context.Posts.Add(post);
+            _dependency.Context.posts.Add(post);
             _dependency.Context.SaveChanges();
 
             // Return the created post entity
@@ -85,7 +85,7 @@ namespace Hatebook.Controllers
         public IActionResult LikePost(int postId)
         {
             // Retrieve the post from the database using the postId
-            var post = _dependency.Context.Posts.FirstOrDefault(p => p.Id == postId);
+            var post = _dependency.Context.posts.FirstOrDefault(p => p.Id == postId);
 
             if (post == null)
             {
@@ -97,7 +97,7 @@ namespace Hatebook.Controllers
             // Create a new like entity and save it to the database
 
             // Check if the user has already liked the post
-            var existingLike = _dependency.Context.Likes.FirstOrDefault(l => l.PostId == postId && l.UserId == userId);
+            var existingLike = _dependency.Context.likes.FirstOrDefault(l => l.PostId == postId && l.UserId == userId);
 
 
 
@@ -109,12 +109,12 @@ namespace Hatebook.Controllers
             };
             if (existingLike != null)
             {        // Remove the existing like from the database
-                _dependency.Context.Likes.Remove(existingLike);
+                _dependency.Context.likes.Remove(existingLike);
                 _dependency.Context.SaveChanges();
                 return BadRequest("Unliked");
             }
 
-            _dependency.Context.Likes.Add(like);
+            _dependency.Context.likes.Add(like);
             _dependency.Context.SaveChanges();
 
             return Ok("Liked");
@@ -125,7 +125,7 @@ namespace Hatebook.Controllers
         public IActionResult AddComment(int postId, CommentDto model)
         {
             // Retrieve the post from the database using the postId
-            var post = _dependency.Context.Posts.FirstOrDefault(p => p.Id == postId);
+            var post = _dependency.Context.posts.FirstOrDefault(p => p.Id == postId);
 
             if (post == null)
             {
@@ -143,7 +143,7 @@ namespace Hatebook.Controllers
                 Content = model.Content
             };
 
-            _dependency.Context.Comments.Add(comment);
+            _dependency.Context.comments.Add(comment);
             _dependency.Context.SaveChanges();
 
             return Ok();
@@ -154,7 +154,7 @@ namespace Hatebook.Controllers
         public IActionResult GetPosts()
         {
             // Retrieve the posts from the database including the Likes navigation property
-            var posts = _dependency.Context.Posts.Include(p => p.Likes).Include(p => p.Comments).ToList();
+            var posts = _dependency.Context.posts.Include(p => p.Likes).Include(p => p.Comments).ToList();
 
             // Configure the JSON serializer options
             var serializerOptions = new JsonSerializerOptions
@@ -175,7 +175,7 @@ namespace Hatebook.Controllers
         public IActionResult GetLikes()
         {
             // Retrieve all posts from the database
-            var likes = _dependency.Context.Likes.ToList();
+            var likes = _dependency.Context.likes.ToList();
 
             return Ok(likes);
         }
@@ -183,7 +183,7 @@ namespace Hatebook.Controllers
         public IActionResult GetComments()
         {
             // Retrieve all posts from the database
-            var comments = _dependency.Context.Comments.ToList();
+            var comments = _dependency.Context.comments.ToList();
 
             return Ok(comments);
         }
