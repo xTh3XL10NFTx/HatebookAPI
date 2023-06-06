@@ -9,12 +9,12 @@ namespace Hatebook.Models
         [Key]
         public Guid Id { get; set; }
         [ForeignKey(nameof(DbIdentityExtention))]
-        public string UserId { get; set; }
-        public DbIdentityExtention DbIdentityExtention { get; set; }
+        public string? UserId { get; set; }
+        public DbIdentityExtention? DbIdentityExtention { get; set; }
 
         [ForeignKey(nameof(GroupsModel))]
         public Guid GroupId { get; set; }
-        public GroupsModel GroupsModel { get; set; }
+        public GroupsModel? GroupsModel { get; set; }
         public UsersInGroups()
         {
             Id = Guid.NewGuid();
