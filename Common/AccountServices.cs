@@ -14,16 +14,16 @@ namespace Hatebook.Common
             _dependency.Logger.LogInformation($"Login Attempt for {request.Email} ");
             try
             {
-                var userRepository = _dependency.UnitOfWork.Identity;
+                var userRepository = _dependency.UnitOfWork.GetRepository<DbIdentityExtention>();
 
                 var user = await userRepository.Get(u => u.Email == request.Email);
                 if (user == null || !await _dependency.AuthManager.ValidateUser(request))
                 {
-                    return new UnauthorizedObjectResult("Wrong email or password");
+                    return Unauthorized("Wrong email or password");
                 }
                 await _dependency.UnitOfWork.Save();
 
-                return new AcceptedResult("User logged in", new { Token = await _dependency.AuthManager.CreateToken() });
+                return Accepted("User logged in", new { Token = await _dependency.AuthManager.CreateToken() });
             }
             catch (Exception ex)
             {
@@ -32,7 +32,7 @@ namespace Hatebook.Common
                     _dependency.Logger.LogError(ex, $"Something Went Wrong in the {nameof(LogIntoUserService)}");
                     // return new ObjectResult($"Something Went Wrong in the {nameof(LogIntoUser)}", StatusCodeResult: 500);
                 }
-                return new UnauthorizedObjectResult("User does not exist");
+                return Unauthorized("User does not exist");
             }
         }
         public async Task<IActionResult> RegisterUserService(HatebookMainModel request, ModelStateDictionary state)
@@ -53,7 +53,7 @@ namespace Hatebook.Common
 
             user.UserName = request.Email;
 
-            var userRepository = _dependency.UnitOfWork.Identity;
+            var userRepository = _dependency.UnitOfWork.GetRepository<DbIdentityExtention>();
             await userRepository.Insert(user);
 
             try
@@ -66,7 +66,7 @@ namespace Hatebook.Common
                 return new ObjectResult($"An error occurred while registering the user: {request.Email}") { StatusCode = (int)HttpStatusCode.InternalServerError };
             }
 
-            return new AcceptedResult("", "User registered successfully!");
+            return Accepted("", "User registered successfully!");
         }
 
         public async Task<IActionResult> DeleteUserService(string email)
@@ -74,7 +74,7 @@ namespace Hatebook.Common
             GroupsModel? user = await GetModelByNameService(email);
             if (user == null) return new BadRequestObjectResult("User not found.");
 
-            var userRepository = _dependency.UnitOfWork.Identity;
+            var userRepository = _dependency.UnitOfWork.GetRepository<DbIdentityExtention>();
             await userRepository.Delete(user.Id);
 
             try
@@ -87,7 +87,7 @@ namespace Hatebook.Common
                 return new ObjectResult($"An error occurred while deleting the user: {email}") { StatusCode = (int)HttpStatusCode.InternalServerError };
             }
 
-            return new OkObjectResult($"User {email} deleted successfully!");
+            return Ok($"User {email} deleted successfully!");
         }
 
         public async Task<IActionResult> GetUser(string email)
@@ -95,7 +95,7 @@ namespace Hatebook.Common
             GroupsModel? user = await GetModelByNameService(email);
             if (user == null) return new BadRequestObjectResult("User not found.");
 
-            return new OkObjectResult(user);
+            return Ok(user);
         }
         public async Task<GroupsModel?> GetModelByNameService(string name)
         {

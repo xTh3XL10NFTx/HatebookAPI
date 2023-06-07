@@ -19,10 +19,9 @@ namespace Hatebook.Services
 
         public static void ConfigureJWT(this IServiceCollection service, IConfiguration Configuration)
         {
-            // Retrieve the secret from appsettings.json
-            //    var secret = Configuration["Jwt:Key"];
-
             var jwtSettings = Configuration.GetSection("Jwt");
+            var keyString = jwtSettings["Key"];
+            var secret = !string.IsNullOrEmpty(keyString) ? new SymmetricSecurityKey(Encoding.UTF8.GetBytes(keyString)) : null;
             service.AddAuthentication(o =>
             {
                 o.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -49,8 +48,11 @@ namespace Hatebook.Services
                             if (context.AuthenticateFailure != null && context.AuthenticateFailure.GetType() == typeof(SecurityTokenExpiredException))
                             {
                                 var authenticationException = context.AuthenticateFailure as SecurityTokenExpiredException;
-                                context.Response.Headers.Add("x-token-expired", authenticationException.Expires.ToString("o"));
-                                context.ErrorDescription = $"The token expired on {authenticationException.Expires.ToString("o")}";
+                                if (authenticationException != null)
+                                {
+                                    context.Response.Headers.Add("x-token-expired", authenticationException.Expires.ToString("o"));
+                                    context.ErrorDescription = $"The token expired on {authenticationException.Expires.ToString("o")}";
+                                }
                             }
 
                             return context.Response.WriteAsync(JsonSerializer.Serialize(new
@@ -70,7 +72,7 @@ namespace Hatebook.Services
                         ClockSkew                = TimeSpan.Zero,
                         ValidIssuer              = jwtSettings["Issuer"],
                         ValidAudience            = jwtSettings["Audience"],
-                        IssuerSigningKey         = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]))
+                        IssuerSigningKey         = secret
                     };
                 });
         }

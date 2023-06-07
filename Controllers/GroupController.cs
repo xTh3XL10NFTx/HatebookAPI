@@ -6,10 +6,10 @@ namespace Hatebook.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class GroupsController : DependencyInjection
+    public class GroupController : DependencyInjection
     {
         private readonly GroupServices _groupServices;
-        public GroupsController(IControllerConstructor dependency, GroupServices groupServices) : base(dependency) => _groupServices = groupServices;
+        public GroupController(IControllerConstructor dependency, GroupServices groupServices) : base(dependency) => _groupServices = groupServices;
 
         [HttpGet("get")]
         public async Task<ActionResult<List<GroupsModel>>> Get() => Ok(await _dependency.Context.groups.ToListAsync());

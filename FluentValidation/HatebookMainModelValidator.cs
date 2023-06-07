@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using System;
 
 namespace Hatebook.Models.Validators
 {
@@ -28,9 +29,9 @@ namespace Hatebook.Models.Validators
         }
         private bool BeValidRole(ICollection<Role> roles)
         {
-            foreach (var role in roles)
+            foreach (Role? role in roles)
             {
-                if (role.Name.ToLower() != "user" && role.Name.ToLower() != "administrator")
+                if (role.Name == null || role.Name.ToLower() != "user" || role.Name.ToLower() != "administrator")
                 {
                     return false;
                 }

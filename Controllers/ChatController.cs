@@ -26,13 +26,13 @@ namespace Hatebook.Controllers
         [HttpPost("group/{groupName}")]
         public async Task<IActionResult> SendMessageToGroup(string groupName, string message)
         {
-            string user = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
+            string? user = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
 
 
-            string userId = _dependency.Context.Users.SingleOrDefault(u => u.Email == user)?.Id;
+            string? userId = _dependency.Context.Users.SingleOrDefault(u => u.Email == user)?.Id;
             Guid? groupId = _dependency.Context.groups.SingleOrDefault(u => u.Name == groupName)?.Id;
 
-            if (groupId == null )
+            if (groupId == null)
             {
                 return BadRequest("Group does not exist.");
             }
@@ -44,7 +44,7 @@ namespace Hatebook.Controllers
                 return BadRequest("User is not in this group. You need to enter the group first.");
             }
 
-            await _hubContext.Clients.Group(groupId.ToString()).SendAsync("ReceiveMessage", user, message);
+            await _hubContext.Clients.Group(groupId?.ToString() ?? "").SendAsync("ReceiveMessage", user, message);
             return Ok();
         }
 
@@ -52,10 +52,16 @@ namespace Hatebook.Controllers
         [HttpPost("friend/{friendName}")]
         public async Task<IActionResult> SendMessageToFriend(string friendName, string message)
         {
-            string user = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
+            string? user = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
 
-            string userId = _dependency.Context.Users.SingleOrDefault(u => u.Email == user)?.Id;
-            string friendId = _dependency.Context.Users.SingleOrDefault(u => u.Email == friendName)?.Id;
+            string? userId = _dependency.Context.Users.SingleOrDefault(u => u.Email == user)?.Id;
+
+            if (userId == null)
+            {
+                return BadRequest("User does not exist.");
+            }
+
+            string? friendId = _dependency.Context.Users.SingleOrDefault(u => u.Email == friendName)?.Id;
 
             if (friendId == null)
             {
@@ -64,8 +70,8 @@ namespace Hatebook.Controllers
 
             // Check if the sender and receiver are friends
             bool areFriends = _dependency.Context.friends.Any(f =>
-                (f.UserId1 == userId && f.UserId2 == friendId) ||
-                (f.UserId1 == friendId && f.UserId2 == userId));
+                (f.FriendRequestSender == userId && f.FriendRequestReceiver == friendId) ||
+                (f.FriendRequestSender == friendId && f.FriendRequestReceiver == userId));
 
             if (!areFriends)
             {

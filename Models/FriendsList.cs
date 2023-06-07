@@ -9,10 +9,10 @@ namespace Hatebook.Models
         [Key]
         public Guid Id { get; set; }
 
-        public string UserId1 { get; set; }
-        public string UserId2 { get; set; }
-        public string Status { get; set; } // Pending, Accepted, Declined
-        public string CreatorId { get; set; }
+        public string? FriendRequestSender { get; set; }
+        public string? FriendRequestReceiver { get; set; }
+        public string? Status { get; set; } // Pending, Accepted, Declined
+        public string? CreatorId { get; set; }
 
         public FriendsList()
         {

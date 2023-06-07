@@ -10,7 +10,7 @@ namespace Hatebook.Common
         {
             if (reader.TokenType == JsonTokenType.String)
             {
-                string genderValue = reader.GetString();
+                string? genderValue = reader.GetString();
 
                 if (!string.IsNullOrEmpty(genderValue))
                 {

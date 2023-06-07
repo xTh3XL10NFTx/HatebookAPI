@@ -1,16 +1,15 @@
 ﻿using System.Text.Json.Serialization;
 using System.Text.Json;
 using Microsoft.AspNetCore.Authorization;
-using System.Text.RegularExpressions;
 
 namespace Hatebook.Controllers
 {
     [ApiController]
     [Route("api/posts")]
-    public class PostsController : DependencyInjection
+    public class PostController : DependencyInjection
     {
 
-        public PostsController(IControllerConstructor dependency) : base(dependency) { }
+        public PostController(IControllerConstructor dependency) : base(dependency) { }
 
         [Authorize]
         [HttpPost("createPost")]
@@ -191,9 +190,9 @@ namespace Hatebook.Controllers
         // Other controller methods for updating and deleting posts
 
         // Helper method to get the user ID from the request
-        private string GetUserIdFromRequest()
+        private string? GetUserIdFromRequest()
         {
-            string userEmail = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
+            string? userEmail = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
 
             return _dependency.Context.Users.SingleOrDefault(u => u.Email == userEmail)?.Id;
             // Implement your logic to retrieve the user ID from the request
@@ -202,7 +201,7 @@ namespace Hatebook.Controllers
 
 
         [HttpGet]
-        public async Task<GroupsModel> GetModelByNameService(string name)
+        public async Task<GroupsModel?> GetModelByNameService(string name)
         {
             var dbUser = await _dependency.Context.groups.FirstOrDefaultAsync(u => u.Name == name);
             return dbUser;

@@ -22,10 +22,10 @@ namespace Hatebook.Models
     {
         [Required]
         [DisplayName("First name")]
-        public string FirstName { get; set; }
+        public string? FirstName { get; set; }
 
         [DisplayName("Last name")]
-        public string LastName { get; set; }
+        public string? LastName { get; set; }
 
         [DisplayName("Birthday")]
         [DataType(DataType.Date)]

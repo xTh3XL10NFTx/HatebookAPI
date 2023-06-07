@@ -23,8 +23,15 @@ var configuration = builder.Configuration;
 builder.Services.AddControllers(options =>
 {
     options.Filters.Add(typeof(ValidateModelAttribute)); // Add the filter globally
-}).AddFluentValidation(fv =>
-    fv.RegisterValidatorsFromAssembly(Assembly.GetExecutingAssembly()));
+});
+
+// Register validators from assembly
+builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+
+// Add FluentValidation
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddFluentValidationClientsideAdapters();
+
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DbConnection")));
 builder.Services.ConfigureJWT(configuration);
@@ -41,7 +48,7 @@ builder.Services.AddScoped<AccountController>();
 builder.Services.AddScoped<AccountServices>();
 builder.Services.AddScoped<GroupServices>();
 builder.Services.AddScoped<UsersInGroupsServces>();
-builder.Services.AddScoped<FriendsListServces>();
+builder.Services.AddScoped<FriendServces>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 builder.Services.ConfigureIdentity();
 builder.Services.AddSignalR();

@@ -9,7 +9,7 @@ namespace Hatebook.Services
     {
         private readonly UserManager<DbIdentityExtention> _userManager;
         private readonly IConfiguration _configuration;
-        private DbIdentityExtention _user;
+        private DbIdentityExtention? _user;
 
         public AuthManager(UserManager<DbIdentityExtention> userManager,
                IConfiguration configuration)
@@ -46,11 +46,16 @@ namespace Hatebook.Services
         {
             var claims = new List<Claim>()
             {
-                new Claim(JwtRegisteredClaimNames.Sub, _user.Id),
-                new Claim(JwtRegisteredClaimNames.Email, _user.Email),
+                new Claim(JwtRegisteredClaimNames.Sub, _user?.Id ?? ""),
+                new Claim(JwtRegisteredClaimNames.Email, _user?.Email ?? ""),
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(ClaimTypes.Name, _user.UserName)
+                new Claim(ClaimTypes.Name, _user?.UserName ?? "")
             };
+
+            if (_user == null)
+            {
+                return claims;
+            }
 
             var roles = await _userManager.GetRolesAsync(_user);
 
@@ -65,7 +70,7 @@ namespace Hatebook.Services
         private SigningCredentials GetSigningCredentials()
         {
             var jwtSettings = _configuration.GetSection("Jwt");
-            var secret      = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]));
+            var secret      = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"] ?? ""));
 
             return new SigningCredentials(secret, SecurityAlgorithms.HmacSha256);
         }
