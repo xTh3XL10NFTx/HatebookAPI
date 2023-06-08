@@ -30,7 +30,7 @@ namespace Hatebook.Data
 
         public DbSet<DbIdentityExtention> dbIdentityExtentions { get; set; }
         public DbSet<GroupsModel> groups                       { get; set; }
-        public DbSet<UsersInGroups> manyToMany                 { get; set; }
+        public DbSet<UsersInGroups> usersInGroups                 { get; set; }
         public DbSet<GroupAdmins> GroupAdmins                  { get; set; }
         public DbSet<FriendsList> Friends                      { get; set; }
         public DbSet<Post> Posts                              { get; set; }

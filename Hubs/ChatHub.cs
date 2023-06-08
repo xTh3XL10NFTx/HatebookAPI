@@ -93,7 +93,7 @@ namespace Hatebook.Hubs
         public async Task SendMessageToGroup(string message, Guid groupId)
         {
             // Check if the user is part of the group
-            bool isMember = _dependency.Context.manyToMany.Any(ug => ug.UserId == userName && ug.GroupId == groupId);
+            bool isMember = _dependency.Context.usersInGroups.Any(ug => ug.UserId == userName && ug.GroupId == groupId);
             if (!isMember)
             {
                 // User is not authorized to send messages in this group
@@ -141,7 +141,7 @@ namespace Hatebook.Hubs
         public override async Task OnConnectedAsync()
         {
             // Get the groups the user belongs to
-            var groupIds = _dependency.Context.manyToMany
+            var groupIds = _dependency.Context.usersInGroups
                 .Where(ug => ug.UserId == userName)
                 .Select(ug => ug.GroupId)
                 .ToList();
@@ -171,7 +171,7 @@ namespace Hatebook.Hubs
         }
         private async Task<List<string>> GetGroupsForConnection(string connectionId)
         {
-            return _dependency.Context.manyToMany
+            return _dependency.Context.usersInGroups
                 .Where(ug => ug.DbIdentityExtention.Id == connectionId)
                 .Select(ug => ug.GroupsModel.Id.ToString())
                 .ToList();

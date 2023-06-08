@@ -38,7 +38,7 @@ namespace Hatebook.Controllers
             }
 
 
-            if (!_dependency.Context.manyToMany
+            if (!_dependency.Context.usersInGroups
         .Any(ug => ug.UserId == userId && ug.GroupId == groupId))
             {
                 return BadRequest("User is not in this group. You need to enter the group first.");
