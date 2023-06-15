@@ -1,0 +1,53 @@
+﻿@using Azure.Core
+@using Microsoft.AspNetCore.Mvc.ModelBinding
+@model HatebookUX.Models.Account
+@{
+    ViewData["Title"] = "Log in";
+
+    var successMessage = ViewBag.SuccessMessage as string;
+    var errors = ViewData["Errors"] as List<string>;
+}
+
+@if (!string.IsNullOrEmpty(successMessage))
+{
+    <div class="alert alert-success">@successMessage</div>
+}
+
+@if (errors != null && errors.Count > 0)
+{
+    <div class="alert alert-danger">
+        @foreach (var error in errors)
+        {
+            <div>@error</div>
+        }
+    </div>
+}
+
+
+<h1>Log in</h1>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-controller="UserAccount" asp-action="Index">
+            <div class="form-group">
+                <label asp-for="Email" label for="exampleInputEmail1" class="control-label"></label>
+                <input asp-for="Email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp" placeholder="Enter email" />
+            </div>
+            <p></p>
+            <div class="form-group">
+                <label asp-for="Password" class="control-label"></label>
+                <input asp-for="Password" class="form-control" id="exampleInputPassword1" aria-describedby="passwordHelp" placeholder="Enter password" />
+            </div>
+            <p></p>
+            <div class="form-group">
+                <input type="submit" name="Create" value="LogIn" class="btn btn-primary" />
+            </div>
+            <p></p>
+            <div>
+                <a asp-action="Index" class="btn-secondary">Back to Homepage</a>
+            </div>
+            <p></p>
+        </form>
+    </div>
+</div>
+
