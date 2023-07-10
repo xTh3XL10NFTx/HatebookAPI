@@ -1,7 +1,4 @@
-﻿using AutoMapper.Internal;
-using Microsoft.AspNetCore.Mvc;
-
-namespace Hatebook.Common
+﻿namespace Hatebook.Common
 {
     public class GroupServices : DependencyInjection
     {
@@ -9,13 +6,11 @@ namespace Hatebook.Common
         public GroupServices(IControllerConstructor dependency, UsersInGroupsServces usersInGroupsServices) : base(dependency) => _usersInGroupsServices = usersInGroupsServices;
         public async Task<IActionResult> CreateGroupService(GroupsModel group, string claimsvalue)
         {
-
-            var ifExists = await _dependency.UnitOfWork.GetRepository<GroupsModel>().Get(g => g.Name == group.Name);
-
+            var ifExists = _dependency.Context.groups.SingleOrDefault(f => (f.Name == group.Name));
             if (ifExists == null)
             {
                 group.Id = Guid.NewGuid();
-
+                // Use the claim value as needed
                 if (claimsvalue != null)
                 {
                     _dependency.Logger.LogInformation($"Registration Attempt for {claimsvalue} ");
@@ -23,18 +18,15 @@ namespace Hatebook.Common
                     try
                     {
                         group.CreatorId = claimsvalue;
-                        await _dependency.UnitOfWork.GetRepository<GroupsModel>().Insert(group);
-                        await _dependency.UnitOfWork.Save();
-
-                        if (group.Name == null)
-                        {
-                            return BadRequest("Error: Group.name");
-                        }
+                        _dependency.Context.groups.Add(group);
+                        await _dependency.Context.SaveChangesAsync();
 
                         await _usersInGroupsServices.MoveUserToGroupService(claimsvalue, group.Name);
                         await _usersInGroupsServices.MoveUserToAdminService(claimsvalue, group.Name);
 
-                        return Ok(group);
+
+
+                        return new OkObjectResult(group);
                     }
                     catch (Exception ex)
                     {
@@ -42,56 +34,47 @@ namespace Hatebook.Common
                         // return Problem($"Something Went Wrong in the {nameof(CreateGroup)}: Such group already exists.", statusCode: 500);
                     }
                 }
-
-                return BadRequest("Claim not found.");
+                return new BadRequestObjectResult("Claim not found.");
             }
-
-            return BadRequest("A group with this name already exists.");
+            return new BadRequestObjectResult("A group with this name already exists.");
         }
 
         public async Task<ActionResult> GetGroupByNameService(string Name)
         {
-            var group = await _dependency.UnitOfWork.GetRepository<GroupsModel>().Get(g => g.Name == Name);
+            GroupsModel? user = await GetModelByNameService(Name);
+            if (user == null) return new BadRequestObjectResult("Group not found");
 
-            if (group == null)
-            {
-                return BadRequest("Group not found");
-            }
-
-            return Ok(group);
+            return new OkObjectResult(user);
         }
 
         public async Task<ActionResult> DeleteGroupService(string Name)
         {
+            GroupsModel? user = await GetModelByNameService(Name);
+            if (user == null) return new BadRequestObjectResult("Group not found");
 
-            var group = await _dependency.UnitOfWork.GetRepository<GroupsModel>().Get(g => g.Name == Name);
+            _dependency.Context.groups.Remove(user);
 
-            if (group == null)
-            {
-                return BadRequest("Group not found");
-            }
-
-            await _dependency.UnitOfWork.GetRepository<GroupsModel>().Delete(group.Id);
-            await _dependency.UnitOfWork.Save();
-
-            return Ok("Group " + Name + " deleted successfully!");
+            await _dependency.Context.SaveChangesAsync();
+            return new OkObjectResult("Group " + Name + " deleted successfully!");
         }
         public async Task<IActionResult> EditGroupService(GroupsModel request, string name)
         {
-            var group = await _dependency.UnitOfWork.GetRepository<GroupsModel>().Get(g => g.Name == name);
+            GroupsModel? user = await GetModelByNameService(name);
+            if (user == null) return new BadRequestObjectResult("User not found!");
 
-            if (group == null)
-            {
-                return BadRequest("Group not found!");
-            }
-            group.Name = request.Name;
-            group.Description = request.Description;
-            group.CreatedDate = request.CreatedDate;
-            group.CreatorId = request.CreatorId;
+            user.Name = request.Name;
+            user.Description = request.Description;
+            user.CreatedDate = request.CreatedDate;
+            user.CreatorId = request.CreatorId;
 
-            _dependency.UnitOfWork.GetRepository<GroupsModel>().Update(group);
-            await _dependency.UnitOfWork.Save();
-            return Ok(group);
+            await _dependency.Context.SaveChangesAsync();
+            return new OkObjectResult(user);
+        }
+
+        public async Task<GroupsModel?> GetModelByNameService(string name)
+        {
+            var dbUser = await _dependency.Context.groups.FirstOrDefaultAsync(u => u.Name == name);
+            return dbUser;
         }
     }
 }

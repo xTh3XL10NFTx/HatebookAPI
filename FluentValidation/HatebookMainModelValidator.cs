@@ -1,5 +1,4 @@
 ﻿using FluentValidation;
-using System;
 
 namespace Hatebook.Models.Validators
 {
@@ -8,18 +7,18 @@ namespace Hatebook.Models.Validators
         public HatebookMainModelValidator()
         {
             RuleFor(model => model.Email)
-                .NotEmpty().WithMessage("Email is required.")
+                .NotEmpty().NotNull().WithMessage("Email is required.")
                 .EmailAddress().WithMessage("Invalid email format.");
 
             RuleFor(model => model.Password)
-                .NotEmpty().WithMessage("Password is required.")
+                .NotEmpty().NotNull().WithMessage("Password is required.")
                 .MinimumLength(6).WithMessage("The password must be at least 6 characters.");
 
             RuleFor(model => model.FirstName)
-                .NotEmpty().WithMessage("First name is required.");
+                .NotEmpty().NotNull().WithMessage("First name is required.");
 
             RuleFor(model => model.Birthday)
-                .NotEmpty().WithMessage("Birthday is required.");
+                .NotEmpty().NotNull().WithMessage("Birthday is required.");
 
             RuleFor(model => model.Roles)
                 .Must(BeValidRole).WithMessage("Invalid role specified. Allowed roles are 'user' and 'administrator'.");
@@ -31,7 +30,7 @@ namespace Hatebook.Models.Validators
         {
             foreach (Role? role in roles)
             {
-                if (role.Name == null || role.Name.ToLower() != "user" || role.Name.ToLower() != "administrator")
+                if (role.Name == null || (role.Name.ToLower() != "user" && role.Name.ToLower() != "administrator"))
                 {
                     return false;
                 }

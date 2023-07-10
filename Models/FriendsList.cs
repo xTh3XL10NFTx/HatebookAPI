@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Hatebook.Models
 {
@@ -9,8 +8,8 @@ namespace Hatebook.Models
         [Key]
         public Guid Id { get; set; }
 
-        public string? FriendRequestSender { get; set; }
-        public string? FriendRequestReceiver { get; set; }
+        public string? Sender { get; set; }
+        public string? Reciver { get; set; }
         public string? Status { get; set; } // Pending, Accepted, Declined
         public string? CreatorId { get; set; }
 

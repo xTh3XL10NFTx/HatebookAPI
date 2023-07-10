@@ -16,9 +16,9 @@ namespace Hatebook.Controllers
         }
 
         [HttpPost("allChat")]
-        public async Task<IActionResult> SendMessage(string user, string message)
+        public async Task<IActionResult> SendMessage([FromBody] MessageRequest messageRequest)
         {
-            await _hubContext.Clients.All.SendAsync("ReceiveMessage", user, message);
+            await _hubContext.Clients.All.SendAsync("ReceiveMessage", messageRequest.User, messageRequest.Message);
             return Ok();
         }
 
@@ -69,9 +69,9 @@ namespace Hatebook.Controllers
             }
 
             // Check if the sender and receiver are friends
-            bool areFriends = _dependency.Context.friends.Any(f =>
-                (f.FriendRequestSender == userId && f.FriendRequestReceiver == friendId) ||
-                (f.FriendRequestSender == friendId && f.FriendRequestReceiver == userId));
+            bool areFriends = _dependency.Context.Friends.Any(f =>
+                (f.Sender == userId && f.Reciver == friendId) ||
+                (f.Sender == friendId && f.Reciver == userId));
 
             if (!areFriends)
             {

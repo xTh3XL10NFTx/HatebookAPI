@@ -50,9 +50,9 @@ namespace Hatebook.Hubs
                 return;
             }
             // Implement your logic to check if the user is friends with the given friendId
-            bool areFriends = _dependency.Context.friends.Any(f =>
-                (f.FriendRequestSender == userNameId && f.FriendRequestReceiver == friendId) ||
-                (f.FriendRequestSender == friendId && f.FriendRequestReceiver == userNameId));
+            bool areFriends = _dependency.Context.Friends.Any(f =>
+                (f.Sender == userNameId && f.Reciver == friendId) ||
+                (f.Sender == friendId && f.Reciver == userNameId));
 
             if (!areFriends)
             {
@@ -72,10 +72,8 @@ namespace Hatebook.Hubs
             await Clients.Group(groupId).SendAsync("ReceiveSystemMessage", $"{userName} has joined the friend chat.");
         }
 
-        public async Task SendMessage(string message)
+        public async Task SendMessage(string user, string message)
         {
-            string user = userName;
-
             // Broadcast the message to all connected clients
             await Clients.All.SendAsync("ReceiveMessage", user, message);
         }
@@ -104,9 +102,9 @@ namespace Hatebook.Hubs
                 return;
             }
             // Check if the sender and receiver are friends
-            bool areFriends = _dependency.Context.friends.Any(f =>
-                (f.FriendRequestSender == userNameId && f.FriendRequestReceiver == friendId) ||
-                (f.FriendRequestSender == friendId && f.FriendRequestReceiver == userNameId));
+            bool areFriends = _dependency.Context.Friends.Any(f =>
+                (f.Sender == userNameId && f.Reciver == friendId) ||
+                (f.Sender == friendId && f.Reciver == userNameId));
 
             if (!areFriends)
             {

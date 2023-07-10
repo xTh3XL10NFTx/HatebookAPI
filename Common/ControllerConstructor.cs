@@ -15,13 +15,13 @@ namespace Hatebook.Common
             IAuthManager authManager,
             IUnitOfWork unitOfWork)
         {
-            UserManager   = userManager;
-            Logger        = logger;
-            Mapper        = mapper;
+            UserManager = userManager;
+            Logger = logger;
+            Mapper = mapper;
             Configuration = configuration;
-            Context       = context;
-            AuthManager   = authManager;
-            UnitOfWork    = unitOfWork;
+            Context = context;
+            AuthManager = authManager;
+            UnitOfWork = unitOfWork;
         }
 
         public UserManager<DbIdentityExtention> UserManager { get; }

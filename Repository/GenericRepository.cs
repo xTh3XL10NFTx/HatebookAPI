@@ -1,90 +1,45 @@
 ﻿using Hatebook.IRepository;
-using Microsoft.EntityFrameworkCore.Query;
-using System.Linq.Expressions;
 
 namespace Hatebook.Repository
 {
-    public class GenericRepository<T> : IGenericRepository<T> where T : class
+    public class GenericRepository<TEntity> : IGenericRepository<TEntity> where TEntity : class
     {
-        private readonly ApplicationDbContext _context;
-        private readonly DbSet<T> _db;
+        private readonly ApplicationDbContext _dbContext;
+        private readonly DbSet<TEntity> _dbSet;
 
-        public GenericRepository(ApplicationDbContext context)
+        public GenericRepository(ApplicationDbContext dbContext)
         {
-            _context = context;
-            _db = _context.Set<T>();
+            _dbContext = dbContext;
+            _dbSet = dbContext.Set<TEntity>();
         }
 
-        public async Task Delete(Guid id)
+        public async Task<TEntity> GetByIdAsync(int id)
         {
-            var entity = await _db.FindAsync(id);
-            if (entity==null) { new BadRequestObjectResult(""); return;  }
-            _db.Remove(entity);
+            return await _dbSet.FindAsync(id);
         }
 
-        public void DeleteRange(IEnumerable<T> entities)
+        public async Task<IEnumerable<TEntity>> GetAllAsync()
         {
-            _db.RemoveRange(entities);
+            return await _dbSet.ToListAsync();
         }
 
-        public async Task<T?> Get(Expression<Func<T, bool>> expression, List<string>? includes = null)
+        public async Task AddAsync(TEntity entity)
         {
-            IQueryable<T> query = _db;
-            if (includes != null)
-            {
-                foreach (var includePropery in includes)
-                {
-                    query = query.Include(includePropery);
-                }
-            }
-
-            return await query.AsNoTracking().FirstOrDefaultAsync(expression);
-        }
-        Task<T> IGenericRepository<T>.Get(Expression<Func<T, bool>> expression, List<string>? includes)
-        {
-            return Get(expression, includes) as Task<T>;
-        }
-        public async Task<IList<T>> GetAll(Expression<Func<T, bool>>? expression = null,
-            Func<IQueryable<T>, IOrderedQueryable<T>>? orderBy = null,
-            List<string>? includes = null)
-        {
-            IQueryable<T> query = _db;
-
-            if (expression != null)
-            {
-                query = query.Where(expression);
-            }
-
-            if (includes != null)
-            {
-                foreach (var includePropery in includes)
-                {
-                    query = query.Include(includePropery);
-                }
-            }
-
-            if (orderBy != null)
-            {
-                query = orderBy(query);
-            }
-
-            return await query.AsNoTracking().ToListAsync();
+            await _dbSet.AddAsync(entity);
         }
 
-        public async Task Insert(T entity)
+        public void Update(TEntity entity)
         {
-            await _db.AddAsync(entity);
+            _dbContext.Update(entity);
+            _dbContext.SaveChangesAsync();
+
         }
 
-        public async Task InsertRange(IEnumerable<T> entities)
+        public void Remove(TEntity entity)
         {
-            await _db.AddRangeAsync(entities);
-        }
+            _dbContext.Remove(entity);
+            _dbContext.SaveChangesAsync();
 
-        public void Update(T entity)
-        {
-            _db.Attach(entity);
-            _context.Entry(entity).State = EntityState.Modified;
         }
     }
 }
