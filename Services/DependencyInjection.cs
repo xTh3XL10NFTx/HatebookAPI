@@ -5,5 +5,5 @@
         public DependencyInjection(IControllerConstructor dependency) => _dependency = dependency;
 
         public IControllerConstructor _dependency { get; }
-}
+    }
 }

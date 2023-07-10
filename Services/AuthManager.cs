@@ -9,7 +9,7 @@ namespace Hatebook.Services
     {
         private readonly UserManager<DbIdentityExtention> _userManager;
         private readonly IConfiguration _configuration;
-        private DbIdentityExtention? _user;
+        private DbIdentityExtention _user;
 
         public AuthManager(UserManager<DbIdentityExtention> userManager,
                IConfiguration configuration)
@@ -41,31 +41,31 @@ namespace Hatebook.Services
 
             return token;
         }
-
         private async Task<List<Claim>> GetClaims()
         {
-            var claims = new List<Claim>()
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, _user?.Id ?? ""),
-                new Claim(JwtRegisteredClaimNames.Email, _user?.Email ?? ""),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(ClaimTypes.Name, _user?.UserName ?? "")
-            };
+            var claims = new List<Claim>();
 
-            if (_user == null)
+            if (_user != null)
             {
-                return claims;
-            }
+                claims.AddRange(new[]
+                {
+            new Claim(JwtRegisteredClaimNames.Sub, _user.Id),
+            new Claim(JwtRegisteredClaimNames.Email, _user.Email),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+            new Claim(ClaimTypes.Name, _user.UserName)
+        });
 
-            var roles = await _userManager.GetRolesAsync(_user);
+                var roles = await _userManager.GetRolesAsync(_user);
 
-            foreach(var role in roles)
-            {
-                claims.Add(new Claim(ClaimTypes.Role, role));
+                foreach (var role in roles)
+                {
+                    claims.Add(new Claim(ClaimTypes.Role, role));
+                }
             }
 
             return claims;
         }
+
 
         private SigningCredentials GetSigningCredentials()
         {

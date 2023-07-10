@@ -33,7 +33,7 @@ namespace Hatebook.Migrations
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     FirstName = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    LastName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Birthday = table.Column<DateTime>(type: "datetime2", nullable: false),
                     GenderType = table.Column<int>(type: "int", nullable: false),
                     ProfilePicture = table.Column<string>(type: "nvarchar(max)", nullable: true),
@@ -62,10 +62,10 @@ namespace Hatebook.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId1 = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    UserId2 = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Status = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    CreatorId = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    Sender = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Reciver = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Status = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatorId = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -78,9 +78,9 @@ namespace Hatebook.Migrations
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Description = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    CreatorId = table.Column<string>(type: "nvarchar(max)", nullable: false)
+                    CreatorId = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -199,10 +199,10 @@ namespace Hatebook.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Content = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ImageUrl = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Timestamp = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -211,8 +211,7 @@ namespace Hatebook.Migrations
                         name: "FK_Posts_AspNetUsers_UserId",
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                 });
 
             migrationBuilder.CreateTable(
@@ -220,7 +219,7 @@ namespace Hatebook.Migrations
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     GroupId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
@@ -230,8 +229,7 @@ namespace Hatebook.Migrations
                         name: "FK_GroupAdmins_AspNetUsers_UserId",
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_GroupAdmins_groups_GroupId",
                         column: x => x.GroupId,
@@ -241,24 +239,23 @@ namespace Hatebook.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "manyToMany",
+                name: "usersInGroups",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     GroupId = table.Column<Guid>(type: "uniqueidentifier", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_manyToMany", x => x.Id);
+                    table.PrimaryKey("PK_usersInGroups", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_manyToMany_AspNetUsers_UserId",
+                        name: "FK_usersInGroups_AspNetUsers_UserId",
                         column: x => x.UserId,
                         principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
+                        principalColumn: "Id");
                     table.ForeignKey(
-                        name: "FK_manyToMany_groups_GroupId",
+                        name: "FK_usersInGroups_groups_GroupId",
                         column: x => x.GroupId,
                         principalTable: "groups",
                         principalColumn: "Id",
@@ -271,9 +268,9 @@ namespace Hatebook.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Content = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     PostId = table.Column<int>(type: "int", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -299,7 +296,7 @@ namespace Hatebook.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     PostId = table.Column<int>(type: "int", nullable: false),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -323,8 +320,8 @@ namespace Hatebook.Migrations
                 columns: new[] { "Id", "ConcurrencyStamp", "Name", "NormalizedName" },
                 values: new object[,]
                 {
-                    { "26d68abe-7b78-41cd-b96b-13f65cd41194", "b791d4c1-e44d-4715-ba4a-937e980a8219", "Administrator", "ADMINISTRATOR" },
-                    { "67e69f3f-5518-432f-834c-1c714757a6cb", "5b3905f8-9c8e-424e-bf1b-1cc639766e0f", "User", "USER" }
+                    { "ab544dab-553e-4bf3-88cd-382c5a9a3d65", "39ceaca1-1ebe-4b6d-937b-5bd3c983dbba", "User", "USER" },
+                    { "ce24c0e1-e4b4-4483-b629-230a623b9ce3", "7fdc65f9-4870-4a7c-b4ed-483fa042be88", "Administrator", "ADMINISTRATOR" }
                 });
 
             migrationBuilder.CreateIndex(
@@ -397,18 +394,18 @@ namespace Hatebook.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_manyToMany_GroupId",
-                table: "manyToMany",
-                column: "GroupId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_manyToMany_UserId",
-                table: "manyToMany",
+                name: "IX_Posts_UserId",
+                table: "Posts",
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Posts_UserId",
-                table: "Posts",
+                name: "IX_usersInGroups_GroupId",
+                table: "usersInGroups",
+                column: "GroupId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_usersInGroups_UserId",
+                table: "usersInGroups",
                 column: "UserId");
         }
 
@@ -443,7 +440,7 @@ namespace Hatebook.Migrations
                 name: "Likes");
 
             migrationBuilder.DropTable(
-                name: "manyToMany");
+                name: "usersInGroups");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

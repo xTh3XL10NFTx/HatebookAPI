@@ -7,7 +7,6 @@ global using Hatebook.Common;
 global using Hatebook.Models;
 using Hatebook.Configurations;
 using Microsoft.OpenApi.Models;
-using Hatebook.Controllers;
 using Hatebook.Filters;
 using Hatebook.Hubs;
 using FluentValidation;
@@ -23,14 +22,10 @@ var configuration = builder.Configuration;
 builder.Services.AddControllers(options =>
 {
     options.Filters.Add(typeof(ValidateModelAttribute)); // Add the filter globally
+}).AddFluentValidation(fv =>
+{
+    fv.RegisterValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 });
-
-// Register validators from assembly
-builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
-
-// Add FluentValidation
-builder.Services.AddFluentValidationAutoValidation();
-builder.Services.AddFluentValidationClientsideAdapters();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DbConnection")));
@@ -42,15 +37,30 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
 
 builder.Services.AddValidatorsFromAssemblyContaining<HatebookMainModelValidator>();
 builder.Services.AddAutoMapper(typeof(MapperInitializer));
+
+builder.Services.AddScoped<UserManager<DbIdentityExtention>>();
+builder.Services.AddScoped<ApplicationDbContext>();
 builder.Services.AddScoped<IAuthManager, AuthManager>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
 builder.Services.AddScoped<IControllerConstructor, ControllerConstructor>();
-builder.Services.AddScoped<AccountController>();
+
 builder.Services.AddScoped<AccountServices>();
 builder.Services.AddScoped<GroupServices>();
 builder.Services.AddScoped<UsersInGroupsServces>();
-builder.Services.AddScoped<FriendServces>();
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+//builder.Services.AddScoped<FriendServces>();
 builder.Services.ConfigureIdentity();
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(builder =>
+    {
+        builder.WithOrigins("https://localhost:7083")
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
+});
+
 builder.Services.AddSignalR();
 
 builder.Services.AddEndpointsApiExplorer();
@@ -110,6 +120,7 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+app.UseCors(); // Add this line to enable CORS for all endpoints
 app.MapHub<ChatHub>("/chathub");
 
 app.Run();

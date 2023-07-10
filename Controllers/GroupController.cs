@@ -6,10 +6,10 @@ namespace Hatebook.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class GroupController : DependencyInjection
+    public class GroupsController : DependencyInjection
     {
         private readonly GroupServices _groupServices;
-        public GroupController(IControllerConstructor dependency, GroupServices groupServices) : base(dependency) => _groupServices = groupServices;
+        public GroupsController(IControllerConstructor dependency, GroupServices groupServices) : base(dependency) => _groupServices = groupServices;
 
         [HttpGet("get")]
         public async Task<ActionResult<List<GroupsModel>>> Get() => Ok(await _dependency.Context.groups.ToListAsync());
@@ -29,10 +29,7 @@ namespace Hatebook.Controllers
         {
             // Get the claim value by claim type
             var claimValue = User.FindFirst(ClaimTypes.Email)?.Value;
-            if (claimValue != null)
-            {
-                return await _groupServices.CreateGroupService(group, claimValue);
-            } else return Unauthorized("Unauthorized");
+            return await _groupServices.CreateGroupService(group, claimValue);
         }
 
         [HttpPut("editGroup/{name}")]
@@ -44,4 +41,4 @@ namespace Hatebook.Controllers
         public async Task<ActionResult> Delete(string Name) => await _groupServices.DeleteGroupService(Name);
 
     }
-}   
+}

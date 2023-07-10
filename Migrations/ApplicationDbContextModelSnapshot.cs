@@ -52,7 +52,6 @@ namespace Hatebook.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("LastName")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("LockoutEnabled")
@@ -113,14 +112,12 @@ namespace Hatebook.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Content")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("PostId")
                         .HasColumnType("int");
 
                     b.Property<string>("UserId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
@@ -139,19 +136,15 @@ namespace Hatebook.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("CreatorId")
-                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Reciver")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Sender")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Status")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UserId1")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UserId2")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -169,7 +162,6 @@ namespace Hatebook.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("UserId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
@@ -191,11 +183,9 @@ namespace Hatebook.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("CreatorId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
@@ -219,7 +209,6 @@ namespace Hatebook.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("UserId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
@@ -240,18 +229,15 @@ namespace Hatebook.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Content")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("ImageUrl")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("Timestamp")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("UserId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
@@ -271,7 +257,6 @@ namespace Hatebook.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("UserId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
@@ -280,7 +265,7 @@ namespace Hatebook.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("manyToMany");
+                    b.ToTable("usersInGroups");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -312,15 +297,15 @@ namespace Hatebook.Migrations
                     b.HasData(
                         new
                         {
-                            Id = "67e69f3f-5518-432f-834c-1c714757a6cb",
-                            ConcurrencyStamp = "5b3905f8-9c8e-424e-bf1b-1cc639766e0f",
+                            Id = "ab544dab-553e-4bf3-88cd-382c5a9a3d65",
+                            ConcurrencyStamp = "39ceaca1-1ebe-4b6d-937b-5bd3c983dbba",
                             Name = "User",
                             NormalizedName = "USER"
                         },
                         new
                         {
-                            Id = "26d68abe-7b78-41cd-b96b-13f65cd41194",
-                            ConcurrencyStamp = "b791d4c1-e44d-4715-ba4a-937e980a8219",
+                            Id = "ce24c0e1-e4b4-4483-b629-230a623b9ce3",
+                            ConcurrencyStamp = "7fdc65f9-4870-4a7c-b4ed-483fa042be88",
                             Name = "Administrator",
                             NormalizedName = "ADMINISTRATOR"
                         });
@@ -443,8 +428,7 @@ namespace Hatebook.Migrations
                     b.HasOne("Hatebook.Data.DbIdentityExtention", "DbIdentityExtention")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("DbIdentityExtention");
 
@@ -461,9 +445,7 @@ namespace Hatebook.Migrations
 
                     b.HasOne("Hatebook.Data.DbIdentityExtention", "DbIdentityExtention")
                         .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UserId");
 
                     b.Navigation("DbIdentityExtention");
 
@@ -481,8 +463,7 @@ namespace Hatebook.Migrations
                     b.HasOne("Hatebook.Data.DbIdentityExtention", "DbIdentityExtention")
                         .WithMany()
                         .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("DbIdentityExtention");
 
@@ -493,9 +474,7 @@ namespace Hatebook.Migrations
                 {
                     b.HasOne("Hatebook.Data.DbIdentityExtention", "DbIdentityExtention")
                         .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UserId");
 
                     b.Navigation("DbIdentityExtention");
                 });
@@ -510,9 +489,7 @@ namespace Hatebook.Migrations
 
                     b.HasOne("Hatebook.Data.DbIdentityExtention", "DbIdentityExtention")
                         .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("UserId");
 
                     b.Navigation("DbIdentityExtention");
 

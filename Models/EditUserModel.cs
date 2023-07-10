@@ -4,18 +4,8 @@ using System.Text.Json.Serialization;
 
 namespace Hatebook.Models
 {
-    public class HatebookLogin
+    public class EditUserModel
     {
-        //login part
-        [Key]
-        public string? Email { get; set; }
-        [Required]
-        public string? Password { get; set; }
-    }
-
-    public class HatebookMainModel : HatebookLogin
-    {
-        [Required]
         [DisplayName("First name")]
         public string? FirstName { get; set; }
 
@@ -42,13 +32,14 @@ namespace Hatebook.Models
         public string? ProfilePicture { get; set; }
 
         public ICollection<Role> Roles { get; set; }
-        public HatebookMainModel()
+        public EditUserModel()
         {
             Roles = new List<Role>();
         }
-    }
-    public class Role
-    {
-        public string? Name { get; set; }
+
+        public class Role
+        {
+            public string? Name { get; set; }
+        }
     }
 }

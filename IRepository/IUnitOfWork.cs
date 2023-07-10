@@ -1,8 +1,8 @@
 ﻿namespace Hatebook.IRepository
 {
-    public interface IUnitOfWork : IDisposable
+    public interface IUnitOfWork
     {
         IGenericRepository<TEntity> GetRepository<TEntity>() where TEntity : class;
-        Task Save();
+        Task SaveAsync();
     }
 }
