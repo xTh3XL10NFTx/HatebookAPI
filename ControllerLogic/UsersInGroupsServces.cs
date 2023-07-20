@@ -1,4 +1,4 @@
-﻿namespace Hatebook.Common
+﻿namespace Hatebook.ControllerLogic
 {
     public class UsersInGroupsServces
     {

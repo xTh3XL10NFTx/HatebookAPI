@@ -22,9 +22,6 @@ namespace Hatebook.Models.Validators
 
             RuleFor(model => model.Roles)
                 .Must(BeValidRole).WithMessage("Invalid role specified. Allowed roles are 'user' and 'administrator'.");
-
-
-            // Add more validation rules as needed
         }
         private bool BeValidRole(ICollection<Role> roles)
         {
@@ -50,7 +47,6 @@ namespace Hatebook.Models.Validators
             RuleFor(model => model.Password)
                 .NotEmpty().NotNull().WithMessage("Password is required.")
                 .MinimumLength(6).WithMessage("The password must be at least 6 characters. хахаhaha");
-            // Add more validation rules as needed
         }
     }
 }

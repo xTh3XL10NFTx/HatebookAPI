@@ -13,6 +13,7 @@ using FluentValidation.AspNetCore;
 using System.Reflection;
 using Hatebook.IRepository;
 using Hatebook.Repository;
+using Hatebook.ControllerLogic;
 
 var builder = WebApplication.CreateBuilder(args);
 var configuration = builder.Configuration;

@@ -20,32 +20,36 @@ namespace Hatebook.Filters
             }
 
             var userId = context.HttpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-
-            if (!IsUserGroupAdmin(userId, groupId, context))
+            if (userId != null)
             {
-                context.Result = new ForbidResult();
+                if (!IsUserGroupAdmin(userId, groupId, context))
+                {
+                    context.Result = new ForbidResult();
+                }
             }
         }
 
-        private bool IsUserGroupAdmin(string userId, Guid groupId, ActionExecutedContext context)
+        private static bool IsUserGroupAdmin(string userId, Guid groupId, ActionExecutedContext context)
         {
             var _dependency = context.HttpContext.RequestServices.GetService<IControllerConstructor>();
-
-            var isAdmin = _dependency.Context.GroupAdmins.Any(ga => ga.UserId == userId && ga.GroupId == groupId);
-
-            return isAdmin;
+            if (_dependency != null)
+            {
+                var isAdmin = _dependency.Context.GroupAdmins.Any(ga => ga.UserId == userId && ga.GroupId == groupId);
+                return isAdmin;
+            }
+            return false;
         }
-
-
 
         public Guid GetGroupNameById(string groupName, ActionExecutedContext context)
         {
             var _dependency = context.HttpContext.RequestServices.GetService<IControllerConstructor>();
-
-            var groupId = _dependency.Context.groups.FirstOrDefault(g => g.Name == groupName);
-            if (groupId != null)
+            if (_dependency != null)
             {
-                return groupId.Id;
+                var groupId = _dependency.Context.groups.FirstOrDefault(g => g.Name == groupName);
+                if (groupId != null)
+                {
+                    return groupId.Id;
+                }
             }
             return Guid.Empty;
         }

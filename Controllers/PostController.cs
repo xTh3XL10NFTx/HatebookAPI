@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Hatebook.ControllerLogic;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Hatebook.Controllers
 {
