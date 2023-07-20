@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.SignalR;
 namespace Hatebook.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize]
     [ApiController]
     public class ChatController : DependencyInjection
     {
@@ -22,7 +23,6 @@ namespace Hatebook.Controllers
             return Ok();
         }
 
-        [Authorize]
         [HttpPost("group/{groupName}")]
         public async Task<IActionResult> SendMessageToGroup(string groupName, string message)
         {
@@ -48,7 +48,6 @@ namespace Hatebook.Controllers
             return Ok();
         }
 
-        [Authorize]
         [HttpPost("friend/{friendName}")]
         public async Task<IActionResult> SendMessageToFriend(string friendName, string message)
         {

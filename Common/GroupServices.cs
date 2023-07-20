@@ -1,9 +1,15 @@
 ﻿namespace Hatebook.Common
 {
-    public class GroupServices : DependencyInjection
+    public class GroupServices
     {
+        public readonly IControllerConstructor _dependency;
         private readonly UsersInGroupsServces _usersInGroupsServices;
-        public GroupServices(IControllerConstructor dependency, UsersInGroupsServces usersInGroupsServices) : base(dependency) => _usersInGroupsServices = usersInGroupsServices;
+        public GroupServices(IControllerConstructor dependency, UsersInGroupsServces usersInGroupsServices)
+        {
+            _dependency = dependency;
+            _usersInGroupsServices = usersInGroupsServices;
+        }
+
         public async Task<IActionResult> CreateGroupService(GroupsModel group, string claimsvalue)
         {
             var ifExists = _dependency.Context.groups.SingleOrDefault(f => (f.Name == group.Name));
@@ -23,8 +29,6 @@
 
                         await _usersInGroupsServices.MoveUserToGroupService(claimsvalue, group.Name);
                         await _usersInGroupsServices.MoveUserToAdminService(claimsvalue, group.Name);
-
-
 
                         return new OkObjectResult(group);
                     }
@@ -57,6 +61,7 @@
             await _dependency.Context.SaveChangesAsync();
             return new OkObjectResult("Group " + Name + " deleted successfully!");
         }
+
         public async Task<IActionResult> EditGroupService(GroupsModel request, string name)
         {
             GroupsModel? user = await GetModelByNameService(name);
@@ -73,8 +78,7 @@
 
         public async Task<GroupsModel?> GetModelByNameService(string name)
         {
-            var dbUser = await _dependency.Context.groups.FirstOrDefaultAsync(u => u.Name == name);
-            return dbUser;
+            return await _dependency.Context.groups.FirstOrDefaultAsync(u => u.Name == name);
         }
     }
 }

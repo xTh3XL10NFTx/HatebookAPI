@@ -1,8 +1,11 @@
 ﻿namespace Hatebook.Common
 {
-    public class UsersInGroupsServces : DependencyInjection
+    public class UsersInGroupsServces
     {
-        public UsersInGroupsServces(IControllerConstructor dependency) : base(dependency) { }
+        public readonly IControllerConstructor _dependency;
+        public UsersInGroupsServces(IControllerConstructor dependency)
+        { _dependency = dependency; }
+
         public async Task<IActionResult> MoveUserToGroupService(string email, string groupName)
         {
 

@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using System.Security.Claims;
 
 namespace Hatebook.Controllers
 {
@@ -13,10 +14,12 @@ namespace Hatebook.Controllers
         // Get api/Account/get
         [HttpGet("get")]
         [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Get() => Ok(_dependency.Mapper.Map<IList<HatebookMainModel>>(await _dependency.Context.Users.ToListAsync()));
 
         // Get api/Account/get/5
         [HttpGet("get/{email}")]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Get(string email) => await _accountServices.GetUser(email);
 
         // POST api/Account/Register
@@ -36,10 +39,11 @@ namespace Hatebook.Controllers
         // DELETE api/Account/delete/5
         [HttpDelete("delete")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Delete()
         {
-            string? email = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
+            string? email = User.FindFirst(ClaimTypes.Email)?.Value;
             if (email != null)
             {
                 return await _accountServices.DeleteUserService(email);
@@ -52,9 +56,11 @@ namespace Hatebook.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<IActionResult> Edit([FromBody] HatebookMainModel updatedUser)
         {
-            string? email = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
+            string? email = User.FindFirst(ClaimTypes.Email)?.Value;
+
             if (email != null)
             {
                 return await _accountServices.EditUserService(updatedUser, email);

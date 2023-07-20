@@ -1,10 +1,10 @@
-﻿using Hatebook.Filters;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 
 namespace Hatebook.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize]
     [ApiController]
     public class GroupsController : DependencyInjection
     {
@@ -12,19 +12,18 @@ namespace Hatebook.Controllers
         public GroupsController(IControllerConstructor dependency, GroupServices groupServices) : base(dependency) => _groupServices = groupServices;
 
         [HttpGet("get")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<List<GroupsModel>>> Get() => Ok(await _dependency.Context.groups.ToListAsync());
 
         [HttpGet("get/{Name}")]
-        [ValidateModel]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<List<GroupsModel>>> GetByName(string Name) => await _groupServices.GetGroupByNameService(Name);
 
-        [Authorize]
         [HttpPost("CreateGroup")]
-        [ValidateModel]
-        [ProducesResponseType(StatusCodes.Status202Accepted)]
+        [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<IActionResult> CreateGroup(GroupsModel group)
         {
             // Get the claim value by claim type
@@ -33,12 +32,13 @@ namespace Hatebook.Controllers
         }
 
         [HttpPut("editGroup/{name}")]
-        [ValidateModel]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<IActionResult> UpdateGroup(GroupsModel request, string name) => await _groupServices.EditGroupService(request, name);
 
         [HttpDelete("delete/{Name}")]
-        [ValidateModel]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult> Delete(string Name) => await _groupServices.DeleteGroupService(Name);
-
     }
 }

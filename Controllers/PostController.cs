@@ -8,7 +8,6 @@ namespace Hatebook.Controllers
     [Route("api/posts")]
     public class PostController : DependencyInjection
     {
-
         public PostController(IControllerConstructor dependency) : base(dependency) { }
 
         [Authorize]

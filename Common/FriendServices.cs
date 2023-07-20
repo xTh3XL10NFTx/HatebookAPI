@@ -1,171 +1,189 @@
-﻿//namespace Hatebook.Common
-//{
-//    public class FriendServces : DependencyInjection
-//    {
-//        public FriendServces(IControllerConstructor dependency) : base(dependency) { }
+﻿namespace Hatebook.Common
+{
+    public class FriendServces
+    {
+        public readonly IControllerConstructor _dependency;
+        public FriendServces(IControllerConstructor dependency)
+        { _dependency = dependency; }
 
-//        public async Task<IActionResult> AddFriendService(FriendsList friend)
-//        {
-//            friend.Id = Guid.NewGuid();
+        public async Task<IActionResult> AddFriendService(FriendsList friend, string loggedEmail)
+        {
+            friend.Id = Guid.NewGuid();
 
-//            string? loggedEmail = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
+            friend.Sender = loggedEmail;
 
-//            if (loggedEmail == null) return BadRequest("You have already sent a friend request!");
+            friend.Status = "Pending";
 
-//            friend.FriendRequestSender = loggedEmail;
-//            friend.Status = "Pending";
+            // Set the UserEmail1 and UserEmail2 properties using the provided email values
+            friend.Sender = _dependency.Context.Users.SingleOrDefault(u => u.Email == friend.Sender)?.Id;
+            friend.Reciver = _dependency.Context.Users.SingleOrDefault(u => u.Email == friend.Reciver)?.Id;
 
-//            var senderUser = _dependency.Context.Users.SingleOrDefault(u => u.Email == friend.FriendRequestSender);
-//            var receiverUser = _dependency.Context.Users.SingleOrDefault(u => u.Email == friend.FriendRequestReceiver);
+            friend.CreatorId = friend.Sender;
 
-//            if (senderUser == null || receiverUser == null)
-//                return BadRequest("Invalid user email(s).");
+            // Check if the users exist and save the friend to the database
+            if (friend.Sender != null && friend.Reciver != null)
+            {
+                // Check if the user is making a friend request to themselves
+                if (friend.Sender == friend.Reciver)
+                {
+                    return new BadRequestObjectResult("You cannot send a friend request to yourself.");
+                }
+                else
+                {
+                    if (_dependency.Context.Friends.SingleOrDefault(f =>
+                    (f.Sender == friend.Sender || f.Reciver == friend.Sender) &&
+                    f.Status == "Accepted" &&
+                    (f.Sender == friend.Reciver || f.Reciver == friend.Reciver)) == null)
+                    {
+                        if (_dependency.Context.Friends.SingleOrDefault(f =>
+                        (f.Sender == friend.Sender) &&
+                        f.Status == "Pending" &&
+                        (f.Reciver == friend.Reciver)) == null)
+                        {
+                            if (_dependency.Context.Friends.SingleOrDefault(f =>
+                            ((f.Sender == friend.Sender &&
+                            f.Reciver == friend.Reciver) ||
+                            (f.Sender == friend.Reciver && f.Reciver == friend.Sender)) &&
+                            f.Status == "Pending") == null)
+                            {
+                                _dependency.Context.Friends.Add(friend);
+                                await _dependency.Context.SaveChangesAsync();
+                                return new OkObjectResult(friend);
+                            }
+                            else
+                            {
+                                var theFriend = _dependency.Context.Friends.SingleOrDefault(f => ((f.Sender == friend.Sender && f.Reciver == friend.Reciver) || (f.Sender == friend.Reciver && f.Reciver == friend.Sender)) && f.Status == "Pending");
+                                theFriend.Status = "Accepted";
+                                await _dependency.Context.SaveChangesAsync();
 
-//            friend.FriendRequestSender = senderUser.Id;
-//            friend.FriendRequestReceiver = receiverUser.Id;
+                                return new OkObjectResult(theFriend + " Friend request " + friend.Status);
+                            }
+                        }
+                        else
+                        {
+                            return new BadRequestObjectResult("You have already sent a friend request!");
+                        }
+                    }
+                    else
+                    {
+                        return new BadRequestObjectResult("You are already friends!");
+                    }
+                }
+            }
+            else
+            {
+                return new BadRequestObjectResult("Invalid user email(s).");
+            }
+        }
+        public async Task<IActionResult> AcceptFriendRequestService(string inputEmail, string? loggedEmail)
+        {
+            loggedEmail = _dependency.Context.Users.SingleOrDefault(u => u.Email == loggedEmail)?.Id;
 
-//            friend.CreatorId = friend.FriendRequestSender;
+            string? userEmail = _dependency.Context.Users.SingleOrDefault(u => u.Email == inputEmail)?.Id;
 
-//            if (friend.FriendRequestSender == friend.FriendRequestReceiver)
-//                return BadRequest("You cannot send a friend request to yourself.");
+            // Check if the email is different from the creator email
+            if (loggedEmail == userEmail)
+            {
+                return new BadRequestObjectResult("You do not have a permission to accept this friend request.");
+            }
 
-//            var existingFriend = await _dependency.Context.Friends
-//                .FirstOrDefaultAsync(f => (f.FriendRequestSender == friend.FriendRequestSender || f.FriendRequestReceiver == friend.FriendRequestSender) && f.Status == "Accepted" && (f.FriendRequestSender == friend.FriendRequestReceiver || f.FriendRequestReceiver == friend.FriendRequestReceiver));
+            var friend = await _dependency.Context.Friends
+                .FirstOrDefaultAsync(f => f.Status == "Pending" && f.Sender == userEmail);
 
-//            if (existingFriend != null)
-//                return BadRequest("You are already friends!");
+            if (friend == null)
+            {
+                return new BadRequestObjectResult("You do not have friend requests from that pereson.");
+            }
 
-//            var pendingRequest = await _dependency.Context.Friends
-//                .FirstOrDefaultAsync(f => (f.FriendRequestSender == friend.FriendRequestSender) && f.Status == "Pending" && (f.FriendRequestReceiver == friend.FriendRequestReceiver));
+            friend.Status = "Accepted";
+            await _dependency.Context.SaveChangesAsync();
 
-//            if (pendingRequest != null)
-//                return BadRequest("You have already sent a friend request!");
+            return new OkObjectResult(friend + " Friend request " + friend.Status);
+        }
 
-//            var pendingReverseRequest = await _dependency.Context.Friends
-//                .FirstOrDefaultAsync(f => ((f.FriendRequestSender == friend.FriendRequestSender && f.FriendRequestReceiver == friend.FriendRequestReceiver) || (f.FriendRequestSender == friend.FriendRequestReceiver && f.FriendRequestReceiver == friend.FriendRequestSender)) && f.Status == "Pending");
+        public async Task<IActionResult> DeclineFriendRequestService(string inputEmail, string? loggedEmail)
+        {
+            loggedEmail = _dependency.Context.Users.SingleOrDefault(u => u.Email == loggedEmail)?.Id;
 
-//            if (pendingReverseRequest != null)
-//            {
-//                pendingReverseRequest.Status = "Accepted";
-//                await _dependency.Context.SaveChangesAsync();
-//                return Ok(pendingReverseRequest + " Friend request " + friend.Status);
-//            }
+            string? userEmail = _dependency.Context.Users.SingleOrDefault(u => u.Email == inputEmail)?.Id;
 
-//            var userRepository = _dependency.UnitOfWork.GetRepository<FriendsList>();
-//            await userRepository.Insert(friend);
-//            await _dependency.UnitOfWork.Save();
+            // Check if the email is different from the creator email
+            if (loggedEmail == userEmail)
+            {
+                return new BadRequestObjectResult("You do not have a friend request from yourself.");
+            }
 
-//            return Ok(friend);
-//        }
-//        public async Task<IActionResult> AcceptFriendRequestService(string UserRequestedFriendship)
-//        {
-//            string? loggedEmail = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
-//            loggedEmail = _dependency.Context.Users.SingleOrDefault(u => u.Email == loggedEmail)?.Id;
+            var friend = await _dependency.Context.Friends
+                .FirstOrDefaultAsync(f => f.Status == "Pending" && f.Sender.Equals(userEmail));
 
-//            string? userEmail = _dependency.Context.Users.SingleOrDefault(u => u.Email == UserRequestedFriendship)?.Id;
+            if (friend == null)
+            {
+                return new BadRequestObjectResult("You do not have friend requests from that pereson.");
+            }
 
-//            if (loggedEmail == userEmail)
-//                return BadRequest("You do not have a friend request from yourself.");
+            friend.Status = "Declined";
 
-//            var friend = await _dependency.Context.Friends
-//                .FirstOrDefaultAsync(f => f.Status == "Pending" && f.FriendRequestReceiver == userEmail);
+            _dependency.Context.Friends.Remove(friend);
+            await _dependency.Context.SaveChangesAsync();
 
-//            if (friend == null)
-//                return NotFound("You do not have friend requests from that person.");
+            return new OkObjectResult("Request declined.");
+        }
+        public IActionResult GetFriendsService(string? loggedEmail)
+        {
+            loggedEmail = _dependency.Context.Users.SingleOrDefault(u => u.Email == loggedEmail)?.Id;
 
-//            var friendRepository = _dependency.UnitOfWork.GetRepository<FriendsList>();
-//            friend.Status = "Accepted";
-//            await _dependency.UnitOfWork.Save();
+            var friendRequests = _dependency.Context.Friends
+                .Where(f => (f.Sender == loggedEmail || f.Reciver == loggedEmail) && f.Status == "Accepted")
+                .Select(f => new
+                {
+                    sender = _dependency.Context.Users.SingleOrDefault(u => u.Id == f.Sender).Email,
+                    reciver = _dependency.Context.Users.SingleOrDefault(u => u.Id == f.Reciver).Email,
+                    f.Status
+                })
+                .ToList();
 
-//            return Ok(friend + " Friend request " + friend.Status);
-//        }
+            return new OkObjectResult(friendRequests);
+        }
 
-//        public async Task<IActionResult> DeclineFriendRequestService(string UserRequestedFriendship)
-//        {
-//            string? loggedEmail = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
-//            loggedEmail = _dependency.Context.Users.SingleOrDefault(u => u.Email == loggedEmail)?.Id;
+        public IActionResult GetFriendRequestsService(string? loggedEmail)
+        {
+            loggedEmail = _dependency.Context.Users.SingleOrDefault(u => u.Email == loggedEmail)?.Id;
 
-//            string? userEmail = _dependency.Context.Users.SingleOrDefault(u => u.Email == UserRequestedFriendship)?.Id;
+            var friendRequests = _dependency.Context.Friends
+                .Where(f => (f.Reciver == loggedEmail) && f.Status == "Pending")
+                .Select(f => new
+                {
+                    f.Id,
+                    sender = _dependency.Context.Users.SingleOrDefault(u => u.Id == f.Sender).Email,
+                    reciver = _dependency.Context.Users.SingleOrDefault(u => u.Id == f.Reciver).Email,
+                    f.Status
+                })
+                .ToList();
 
-//            if (loggedEmail == userEmail)
-//                return BadRequest("You do not have a friend request from yourself.");
+            return new OkObjectResult(friendRequests);
+        }
+        public async Task<IActionResult> RemoveFriendService(string inputEmail, string? loggedEmail)
+        {
+            loggedEmail = _dependency.Context.Users.SingleOrDefault(u => u.Email == loggedEmail)?.Id;
 
-//            var friend = await _dependency.Context.Friends
-//                .FirstOrDefaultAsync(f => (f.FriendRequestSender == loggedEmail || f.FriendRequestReceiver == loggedEmail) && f.Status == "Pending" && (f.FriendRequestSender == userEmail || f.FriendRequestReceiver == userEmail));
+            string? inputEmailId = _dependency.Context.Users.SingleOrDefault(u => u.Email == inputEmail)?.Id;
 
-//            if (friend == null)
-//                return NotFound("You do not have friend requests from that person.");
+            FriendsList? friends = _dependency.Context.Friends.SingleOrDefault(f =>
+            (f.Sender == loggedEmail || f.Reciver == loggedEmail) &&
+            f.Status == "Accepted" &&
+            (f.Sender == inputEmailId || f.Reciver == inputEmailId));
 
-//            var friendRepository = _dependency.UnitOfWork.GetRepository<FriendsList>();
-//            friend.Status = "Declined";
-//            await friendRepository.Delete(friend.Id);
-//            await _dependency.UnitOfWork.Save();
-
-//            return Ok("Request declined.");
-//        }
-//        public IActionResult GetFriendsService()
-//        {
-//            string? loggedEmail = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
-//            loggedEmail = _dependency.Context.Users.SingleOrDefault(u => u.Email == loggedEmail)?.Id;
-
-//            var friendRequests = _dependency.Context.Friends
-//                .Where(f => (f.FriendRequestSender == loggedEmail || f.FriendRequestReceiver == loggedEmail) && f.Status == "Accepted")
-//                .Select(f => new
-//                {
-//                    UserEmail1 = GetUserEmail(f.FriendRequestSender),
-//                    UserEmail2 = GetUserEmail(f.FriendRequestReceiver)
-//                })
-//                .ToList();
-
-//            return Ok(friendRequests);
-//        }
-
-//        public IActionResult GetFriendRequestsService()
-//        {
-//            string? loggedEmail = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
-//            loggedEmail = _dependency.Context.Users.SingleOrDefault(u => u.Email == loggedEmail)?.Id;
-
-//            var friendRequests = _dependency.Context.Friends
-//                .Where(f => f.FriendRequestReceiver == loggedEmail && f.Status == "Pending")
-//                .Select(f => new
-//                {
-//                    f.Id,
-//                    UserEmail1 = GetUserEmail(f.FriendRequestSender),
-//                    UserEmail2 = GetUserEmail(f.FriendRequestReceiver),
-//                    f.Status
-//                })
-//                .ToList();
-
-//            return Ok(friendRequests);
-//        }
-//        public async Task<IActionResult> RemoveFriendService(string friendToRemove)
-//        {
-//            string? loggedEmail = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
-//            loggedEmail = _dependency.Context.Users.SingleOrDefault(u => u.Email == loggedEmail)?.Id;
-
-//            string? inputEmailId = _dependency.Context.Users.SingleOrDefault(u => u.Email == friendToRemove)?.Id;
-
-//            var friendRepository = _dependency.UnitOfWork.GetRepository<FriendsList>();
-//            var friends = await friendRepository.Get(f => (f.FriendRequestSender == loggedEmail || f.FriendRequestReceiver == loggedEmail) && f.Status == "Accepted" && (f.FriendRequestSender == inputEmailId || f.FriendRequestReceiver == inputEmailId));
-
-//            if (friends != null)
-//            {
-//                await friendRepository.Delete(friends.Id);
-//                await _dependency.UnitOfWork.Save();
-//                return Ok(friendToRemove + " removed from friends.");
-//            }
-//            else
-//            {
-//                return BadRequest("Friendship does not exist.");
-//            }
-//        }
-
-
-
-//        private string? GetUserEmail(string? userId)
-//        {
-//            var user = _dependency.Context.Users.SingleOrDefault(u => u.Id == userId);
-//            return user?.Email;
-//        }
-//    }
-//}
+            // Check if the users exist and save the friend to the database
+            if (friends != null)
+            {
+                _dependency.Context.Friends.Remove(friends);
+                await _dependency.Context.SaveChangesAsync();
+                return new OkObjectResult(inputEmail + " removed from friends.");
+            }
+            else
+            {
+                return new BadRequestObjectResult("Friendship does not exist.");
+            }
+        }
+    }
+}

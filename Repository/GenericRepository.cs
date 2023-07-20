@@ -28,17 +28,17 @@ namespace Hatebook.Repository
             await _dbSet.AddAsync(entity);
         }
 
-        public void Update(TEntity entity)
+        public async Task Update(TEntity entity)
         {
             _dbContext.Update(entity);
-            _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync();
 
         }
 
-        public void Remove(TEntity entity)
+        public async Task Remove(TEntity entity)
         {
             _dbContext.Remove(entity);
-            _dbContext.SaveChangesAsync();
+            await _dbContext.SaveChangesAsync();
 
         }
     }

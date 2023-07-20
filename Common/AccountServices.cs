@@ -67,7 +67,7 @@ namespace Hatebook.Common
             DbIdentityExtention? user = await GetModelByNameService(email);
             if (user == null) return new BadRequestObjectResult("User not found.");
 
-            _dependency.UnitOfWork.GetRepository<DbIdentityExtention>().Remove(user);
+            await _dependency.UnitOfWork.GetRepository<DbIdentityExtention>().Remove(user);
 
             try
             {
@@ -81,7 +81,6 @@ namespace Hatebook.Common
 
             return new OkObjectResult($"User {email} deleted successfully!");
         }
-
 
         public async Task<IActionResult> EditUserService(HatebookMainModel updatedUserr, string email)
         {
@@ -116,8 +115,7 @@ namespace Hatebook.Common
         }
         public async Task<DbIdentityExtention?> GetModelByNameService(string name)
         {
-            var dbUser = await _dependency.Context.Users.FirstOrDefaultAsync(u => u.Email == name);
-            return dbUser;
+            return await _dependency.Context.Users.FirstOrDefaultAsync(u => u.Email == name);
         }
     }
 }

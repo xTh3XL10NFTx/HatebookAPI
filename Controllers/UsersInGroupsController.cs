@@ -1,8 +1,10 @@
 ﻿using Hatebook.Filters;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Hatebook.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize]
     [ApiController]
     public class UsersInGroupsController : ControllerBase
     {

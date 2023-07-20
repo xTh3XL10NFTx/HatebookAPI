@@ -9,8 +9,6 @@ using Hatebook.Configurations;
 using Microsoft.OpenApi.Models;
 using Hatebook.Filters;
 using Hatebook.Hubs;
-using FluentValidation;
-using Hatebook.Models.Validators;
 using FluentValidation.AspNetCore;
 using System.Reflection;
 using Hatebook.IRepository;
@@ -35,7 +33,6 @@ builder.Services.Configure<ApiBehaviorOptions>(options =>
     options.SuppressModelStateInvalidFilter = true;
 });
 
-builder.Services.AddValidatorsFromAssemblyContaining<HatebookMainModelValidator>();
 builder.Services.AddAutoMapper(typeof(MapperInitializer));
 
 builder.Services.AddScoped<UserManager<DbIdentityExtention>>();
@@ -48,7 +45,7 @@ builder.Services.AddScoped<IControllerConstructor, ControllerConstructor>();
 builder.Services.AddScoped<AccountServices>();
 builder.Services.AddScoped<GroupServices>();
 builder.Services.AddScoped<UsersInGroupsServces>();
-//builder.Services.AddScoped<FriendServces>();
+builder.Services.AddScoped<FriendServces>();
 builder.Services.ConfigureIdentity();
 builder.Services.AddCors(options =>
 {
