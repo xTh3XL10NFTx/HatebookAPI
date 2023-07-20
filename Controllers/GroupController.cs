@@ -28,7 +28,8 @@ namespace Hatebook.Controllers
         {
             // Get the claim value by claim type
             var claimValue = User.FindFirst(ClaimTypes.Email)?.Value;
-            return await _groupServices.CreateGroupService(group, claimValue);
+            if(claimValue != null) return await _groupServices.CreateGroupService(group, claimValue);
+            else return BadRequest("You log in first.");
         }
 
         [HttpPut("editGroup/{name}")]

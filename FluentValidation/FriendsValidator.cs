@@ -2,9 +2,9 @@
 
 namespace Hatebook.Models.Validators
 {
-    public class FriendsListValidator : AbstractValidator<FriendsList>
+    public class FriendsValidator : AbstractValidator<FriendsList>
     {
-        public FriendsListValidator()
+        public FriendsValidator()
         {
             RuleFor(model => model.Reciver)
                 .NotEmpty().NotNull().WithMessage("You have to enter an the email of the user you want to send a friend request to.")

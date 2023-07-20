@@ -53,6 +53,7 @@
                             else
                             {
                                 var theFriend = _dependency.Context.Friends.SingleOrDefault(f => ((f.Sender == friend.Sender && f.Reciver == friend.Reciver) || (f.Sender == friend.Reciver && f.Reciver == friend.Sender)) && f.Status == "Pending");
+                                if (theFriend == null) return new BadRequestObjectResult("Error");
                                 theFriend.Status = "Accepted";
                                 await _dependency.Context.SaveChangesAsync();
 

@@ -17,7 +17,8 @@ namespace Hatebook.Controllers
         {
             string? loggedEmail = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
 
-            return await _friendServices.AddFriendService(friend, loggedEmail);
+            if (loggedEmail != null) return await _friendServices.AddFriendService(friend, loggedEmail);
+            else return BadRequest("You log in first.");
         }
 
         [HttpPost("accept")]
@@ -27,7 +28,8 @@ namespace Hatebook.Controllers
         {
             string? loggedEmail = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
 
-            return await _friendServices.AcceptFriendRequestService(inputEmail, loggedEmail);
+            if (loggedEmail != null) return await _friendServices.AcceptFriendRequestService(inputEmail, loggedEmail);
+            else return BadRequest("You log in first.");
         }
 
         [HttpPost("decline")]
@@ -37,7 +39,8 @@ namespace Hatebook.Controllers
         {
             string? loggedEmail = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
 
-            return await _friendServices.DeclineFriendRequestService(inputEmail, loggedEmail);
+            if (loggedEmail != null) return await _friendServices.DeclineFriendRequestService(inputEmail, loggedEmail);
+            else return BadRequest("You log in first.");
         }
 
         [HttpGet("friends")]
@@ -65,7 +68,8 @@ namespace Hatebook.Controllers
         {
             string? loggedEmail = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
 
-            return await _friendServices.RemoveFriendService(inputEmail, loggedEmail);
+            if (loggedEmail != null) return await _friendServices.RemoveFriendService(inputEmail, loggedEmail);
+            else return BadRequest("You log in first.");
         }
     }
 }

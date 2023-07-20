@@ -99,7 +99,7 @@ namespace Hatebook.Common
                 user.GenderType = (DbIdentityExtention.Gender)updatedUserr.GenderType;
                 user.ProfilePicture = updatedUserr.ProfilePicture;
 
-                _dependency.UnitOfWork.GetRepository<DbIdentityExtention>().Update(user);
+                await _dependency.UnitOfWork.GetRepository<DbIdentityExtention>().Update(user);
 
                 return new OkObjectResult("User " + email + " updated successfully!");
             }

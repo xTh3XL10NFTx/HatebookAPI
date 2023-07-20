@@ -1,211 +1,69 @@
-﻿using System.Text.Json.Serialization;
-using System.Text.Json;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 
 namespace Hatebook.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/posts")]
     public class PostController : DependencyInjection
     {
-        public PostController(IControllerConstructor dependency) : base(dependency) { }
+        private readonly PostServices _postServices;
+        public PostController(IControllerConstructor dependency, PostServices postServices) : base(dependency) => _postServices = postServices;
 
-        [Authorize]
         [HttpPost("createPost")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public IActionResult CreatePost(PostDto model)
-        {
-            // Validate the input
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            // Get the user information from the request
-            var userId = GetUserIdFromRequest();
-
-            // Create a new post entity
-            Post post = new Post
-            {
-                Content = model.Content,
-                ImageUrl = model.ImageUrl,
-                Timestamp = DateTime.Now,
-                UserId = userId
-            };
-
-            // Save the new post to the database
-            _dependency.Context.Posts.Add(post);
-            _dependency.Context.SaveChanges();
-
-            // Return the created post entity
-            return Ok(post);
-        }
-
-        /* 
-        [Authorize]
-        [HttpPost("createPost/{groupName}")]
-        public async Task<IActionResult> CreatePostInGroupAsync(string groupName, PostDto model)
-        {
-            GroupsModel group = await GetModelByNameService(groupName);
-            // Validate the input
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            // Get the user information from the request
-            var userId = GetUserIdFromRequest();
-
-            if (group == null)
-            {
-                return NotFound("Group not found");
-            }
-
-            // Create a new post entity
-            Post post = new Post
-            {
-                Content = model.Content,
-                ImageUrl = model.ImageUrl,
-                Timestamp = DateTime.Now,
-                UserId = userId
-            };
-
-            // Save the new post to the database
-            _dependency.Context.Posts.Add(post);
-            _dependency.Context.SaveChanges();
-
-            // Return the created post entity
-            return Ok(post);
-        }
-        */
-
-        [Authorize]
-        [HttpPost("{postId}/like")]
-        public IActionResult LikePost(int postId)
-        {
-            // Retrieve the post from the database using the postId
-            var post = _dependency.Context.Posts.FirstOrDefault(p => p.Id == postId);
-
-            if (post == null)
-            {
-                return NotFound();
-            }
-
-            // Get the user information from the request
-            var userId = GetUserIdFromRequest();
-            // Create a new like entity and save it to the database
-
-            // Check if the user has already liked the post
-            var existingLike = _dependency.Context.Likes.FirstOrDefault(l => l.PostId == postId && l.UserId == userId);
-
-
-
-
-            var like = new Like
-            {
-                PostId = postId,
-                UserId = userId
-            };
-            if (existingLike != null)
-            {        // Remove the existing like from the database
-                _dependency.Context.Likes.Remove(existingLike);
-                _dependency.Context.SaveChanges();
-                return BadRequest("Unliked");
-            }
-
-            _dependency.Context.Likes.Add(like);
-            _dependency.Context.SaveChanges();
-
-            return Ok("Liked");
-        }
-
-        [Authorize]
-        [HttpPost("{postId}/comment")]
-        public IActionResult AddComment(int postId, CommentDto model)
-        {
-            // Retrieve the post from the database using the postId
-            var post = _dependency.Context.Posts.FirstOrDefault(p => p.Id == postId);
-
-            if (post == null)
-            {
-                return NotFound();
-            }
-
-            // Get the user information from the request
-            var userId = GetUserIdFromRequest();
-
-            // Create a new comment entity and save it to the database
-            var comment = new Comment
-            {
-                PostId = postId,
-                UserId = userId,
-                Content = model.Content
-            };
-
-            _dependency.Context.Comments.Add(comment);
-            _dependency.Context.SaveChanges();
-
-            return Ok();
-        }
-
-        [Authorize]
-        [HttpGet("posts")]
-        public IActionResult GetPosts()
-        {
-            // Retrieve the posts from the database including the Likes navigation property
-            var posts = _dependency.Context.Posts.Include(p => p.Likes).Include(p => p.Comments).ToList();
-
-            // Configure the JSON serializer options
-            var serializerOptions = new JsonSerializerOptions
-            {
-                ReferenceHandler = ReferenceHandler.Preserve,
-                WriteIndented = true
-            };
-
-            // Serialize the posts to JSON using the configured options
-            var json = JsonSerializer.Serialize(posts, serializerOptions);
-
-            // Return the JSON response
-            return Ok(json);
-        }
-
-        [Authorize]
-        [HttpGet("likes")]
-        public IActionResult GetLikes()
-        {
-            // Retrieve all posts from the database
-            var likes = _dependency.Context.Likes.ToList();
-
-            return Ok(likes);
-        }
-        [HttpGet("comments")]
-        public IActionResult GetComments()
-        {
-            // Retrieve all posts from the database
-            var comments = _dependency.Context.Comments.ToList();
-
-            return Ok(comments);
-        }
-
-        // Other controller methods for updating and deleting posts
-
-        // Helper method to get the user ID from the request
-        private string? GetUserIdFromRequest()
         {
             string? userEmail = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
 
-            return _dependency.Context.Users.SingleOrDefault(u => u.Email == userEmail)?.Id;
-            // Implement your logic to retrieve the user ID from the request
+            if (userEmail != null) return _postServices.CreatePostService(model, userEmail);
+            else return BadRequest("You log in first.");
         }
 
-
-
-        [HttpGet]
-        public async Task<GroupsModel?> GetModelByNameService(string name)
+        [HttpPost("createPost/{groupName}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> CreatePostInGroupAsync(string groupName, PostDto model)
         {
-            var dbUser = await _dependency.Context.groups.FirstOrDefaultAsync(u => u.Name == name);
-            return dbUser;
+            string? userEmail = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
+
+            if (userEmail != null) return await _postServices.CreatePostInGroupService(groupName, model, userEmail);
+            else return BadRequest("You log in first.");
         }
+
+        [HttpPost("{postId}/like")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public IActionResult LikePost(int postId)
+        {
+            string? userEmail = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
+
+            if (userEmail != null) return _postServices.LikePostService(postId, userEmail);
+            else return BadRequest("You log in first.");
+        }
+
+        [HttpPost("{postId}/comment")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public IActionResult AddComment(int postId, CommentDto model)
+        {
+            string? userEmail = User.Claims.FirstOrDefault(c => c.Type == "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress")?.Value;
+
+            if (userEmail != null) return _postServices.AddCommentService(postId, model, userEmail);
+            else return BadRequest("You log in first.");
+        }
+
+        [HttpGet("posts")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public IActionResult GetPosts() => _postServices.GetPostsService();
+
+        [HttpGet("likes")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public IActionResult GetLikes() => _postServices.GetLikesService();
+
+        [HttpGet("comments")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public IActionResult GetComments() => _postServices.GetCommentsService();
     }
-
-
 }
